@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/BaseCSS/common.css">
+    <link rel="stylesheet" href="/static/BaseCSS/agregar.css">
+    <title>Editar gimnasio</title>
+</head>
+<body>
+    <input type="hidden" id="hidden" value="{{idGim}}">
+    <form action="" method="post" enctype=multipart/form-data class="cAgregarUsu">
+        <section>
+            <label for="Nombre">Nombre</label>
+            <input type="text" name="Nombre" id="Nombre">
+        </section>
+        <section>
+            <label for="Direccion">Direccion</label>
+            <input type="text" name="Direccion" id="Direccion">
+        </section>
+        <section>
+            <label for="Ubicacion">Ubicacion</label>
+            <input type="text" name="Ubicacion" id="Ubicacion">
+        </section>
+        <section>
+            <label for="Instagram">Instagram</label>
+            <input type="text" name="Instagram" id="Instagram">
+        </section>
+        <section>
+            <label for="Contacto">Contacto</label>
+            <input type="text" name="Contacto" id="Conta">
+        </section>
+        <section>
+            <label for="Facebook">Facebook</label>
+            <input type="text" name="Facebook" id="Facebook">
+        </section>
+        <section id="Logo">
+            <label for="Logo">Logo</label>
+            <input type="file" name="Logo" id="Logo">
+        </section>
+        <section id="Instructor">
+            <section>
+                <label for="Instructor">Instructor/es</label>
+                <button class="btnRedondeado" type="button" onclick="aUsuGim()">Agregar</button>
+            </section>
+        </section>
+        <section id="Horarios">
+            <section>
+                <label for="Horario">Horarios</label>
+                <button class="btnRedondeado" type="button" onclick="aHoraGim()">Agregar</button>
+            </section>
+        </section>
+        <div class="dosBotones">
+            <button class="btnRedondeado" type="submit">Aceptar</button>
+            <button class="btnRedondeado" type="button" onclick="location.href='/vGimnasio'">Regresar</button>
+        </div>
+    </form>
+</body>
+<script src="/static/BaseJs/editarGimnasio.js"></script>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/BaseCSS/common.css">
+    <link rel="stylesheet" href="/static/BaseCSS/agregar.css">
+    <title>Agregar gimnasio</title>
+</head>
+<body>
+    <form action="" method="post" enctype=multipart/form-data class="cAgregarUsu">
+        <section>
+            <label>Nombre</label>
+            <input type="text" name="Nombre">
+        </section>
+        <section>
+            <label>Direccion</label>
+            <input type="text" name="Direccion">
+        </section>
+        <section>
+            <label>Ubicacion</label>
+            <input type="text" name="Ubicacion">
+        </section>
+        <section>
+            <label>Instagram</label>
+            <input type="text" name="Instagram">
+        </section>
+        <section>
+            <label>Contacto</label>
+            <input type="text" name="Contacto">
+        </section>
+        <section>
+            <label>Facebook</label>
+            <input type="text" name="Facebook">
+        </section>
+        <section id="Logo">
+            <label>Logo</label>
+            <input type="file" name="Logo">
+        </section>
+        <section id="Instructor">
+            <section>
+                <label>Instructor/es</label>
+                <button class="btnRedondeado" type="button" onclick="aUsuGim()">Agregar</button>
+            </section>
+        </section>
+        <div class="dosBotones">
+            <button class="btnRedondeado" type="submit">Aceptar</button>
+            <button class="btnRedondeado" type="button" onclick="location.href='/MainBase'">Regresar</button>
+        </div>
+    </form>
+</body>
+<script src="/static/BaseJs/selGimInstru.js"></script>
+</html>

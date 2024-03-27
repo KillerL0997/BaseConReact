@@ -1,0 +1,197 @@
+.cAgregarUsu, .cAgregarEve, .cAgregarFoto{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+.cAgregarUsu{
+    width: 80%;
+    margin: 10%;
+    flex-direction: row;
+    background-color: darkgray;
+    border-radius: 20px;
+    border: solid black 2px;
+}
+.cAgregarEve, .cAgregarFoto{
+    width: 50%;
+    flex-direction: column;
+    margin: 10% 25%;
+    background-color: darkgrey;
+    border-radius: 20px;
+    border: solid black 2px;
+}
+.cAgregarEve section, .cAgregarFoto section{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.cAgregarEve section input, .cAgregarEve section select,
+.cAgregarFoto section input, .cAgregarFoto section select{
+    width: 50%;
+}
+.cAgregarUsu section{
+    width: 45%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.cAgregarUsu section input, .cAgregarUsu section select{
+    width: 80%;
+}
+.selInpu{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+#TipoDocumento{
+    width: 30%;
+}
+#Documento{
+    width: 50%;
+}
+#Logo{
+    width: 100%;
+}
+#Instructor{
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: space-around;
+}
+#Instructor section{
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    text-align: center;
+}
+#Instructor section label, #Instructor section button{
+    width: 45%;
+}
+#Instructor div{
+    width: 45%;
+}
+#Instructor div select{
+    width: 55%;
+}
+#Instructor div button{
+    width: 40%;
+}
+#Destinatario{
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+#Destinatario div{
+    display: flex;
+    justify-content: space-around;
+}
+#Destinatario div input{
+    width: 15px;
+}
+#Contacto{
+    width: 100%;
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+    text-align: center;
+}
+#Contacto h4, #Contacto button{
+    width: 45%;
+}
+#ContactoAlumno{
+    width: 100%;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: space-around;
+}
+.contactoAlu{
+    width: 45%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.radio{
+    width: 50%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+.radio input{
+    width: 25px !important;
+}
+#Horarios{
+    width: 100%;
+}
+#Horarios section{
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    text-align: center;
+}
+#Horarios div{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+}
+#Horarios section label, #Horarios section button{
+    width: 45%;
+}
+#Horarios div section{
+    flex-direction: column;
+}
+#Horarios div section div{
+    flex-direction: row;
+    text-align: center;
+}
+#Horarios div section label, #Horarios div section select, #Horarios div section input{
+    width: 22%;
+}
+#Horarios div button{
+    width: 40%;
+}
+.Hora{
+    width: 50% !important;
+}
+#diaClase{
+    display: flex !important;
+    flex-direction: row !important;
+}
+@media screen and (max-width: 768px){
+    .cAgregarUsu{
+        width: 100%;
+        margin: 0;
+        flex-direction: column;
+    }
+    .cAgregarUsu section{
+        width: 100%;
+    }
+    .cAgregarEve{
+        width: 100%;
+        margin: 0;
+    }
+    .cAgregarFoto{
+        width: 100%;
+        margin: 0;
+        margin-top: 5rem;
+    }
+    .cAgregarFoto section input, .cAgregarFoto section select{
+        width: 90%;
+    }
+    #Descripcion{
+        width: 50%;
+    }
+    #Destinatario{
+        flex-direction: column;
+    }
+    .contactoAlu{
+        width: 100%;
+    }
+    #Instructor div{
+        width: 90%;
+    }
+}

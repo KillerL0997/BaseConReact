@@ -1,0 +1,128 @@
+.contenedor{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+.filtro{
+    width: 20%;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+}
+.tabla{
+    min-width: 70%;
+    width: fit-content;
+    height: fit-content;
+    text-align: center;
+}
+th, td{
+    font-size: 1rem;
+}
+.selUsuGim select{
+    width: 48%;
+}
+.tablaImagen{
+    width: 70%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+}
+.tablaImagen section{
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+.tablaImagen section div{
+    width: 25%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 10px;
+}
+.tablaImagen section div img{
+    width: 100%;
+}
+#detalles{
+    text-align: center;
+    position: fixed;
+    z-index: 1;
+    width: 50%;
+    margin: 10% 25%;
+    background-color: darkgray;
+    border-radius: 10px;
+    border-color: black;
+    border-style: groove;
+}
+#detalles button{
+    width: 35px;
+    float: right;
+}
+#detalles .tresBotones, #detalles .dosBotones{
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+}
+#detalles .tresBotones button{
+    width: 30%;
+}
+#detalles .dosBotones button{
+    width: 45%;
+}
+#detaGim{
+    display: flex;
+    flex-direction: row-reverse;
+    text-align: center;
+    padding: 20px;
+    align-items: center;
+    justify-content: space-around;
+}
+#detalleEvento{
+    display: flex;
+    flex-direction: column
+}
+#detaAlu{
+    display: flex;
+    justify-content: space-around;
+    padding: 10%;
+}
+#detaAlu div{
+    width: 45%;
+}
+@media screen and (max-width: 768px){
+    .filtro{
+        z-index: 1;
+        position: absolute;
+        left: 0;
+        background-color: darkgrey;
+        width: 35%;
+    }
+    .filtro div input, .filtro div select{
+        width: 95%;
+    }
+    .tabla{
+        width: 100%;
+    }
+    .tablaImagen{
+        width: 100%;
+    }
+    .tablaImagen section div{
+        width: 40%;
+    }
+    #detalles{
+        position: fixed;
+        z-index: 2;
+        margin: 5%;
+        width: 90%;
+        min-height: max-content;
+    }
+    #detaGim{
+        flex-direction: column;
+    }
+    #detaAlu div{
+        width: 100%;
+    }
+    .contenedor{
+        min-width: max-content;
+    }
+}

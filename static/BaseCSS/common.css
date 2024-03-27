@@ -1,0 +1,56 @@
+*{
+    margin: 0%;
+    padding: 0%;
+    word-break: break-word;
+    font-size: 1.1rem;
+}
+.btnRedondeado, .btnFilRedondeado{
+    border-radius: 20px;
+    height: 2rem;
+    font-size: .8rem;
+    font-weight: bold;
+    width: 100%;
+    background-color: transparent;
+    border: 3px solid #214677;
+    margin-bottom: 1px;
+    border-bottom: none;
+}
+.btnRedondeado:hover, .btnFilRedondeado:hover{
+    background-color: #225EAB;
+    color: whitesmoke;
+}
+.dosBotones{
+    width: 100%;
+    padding-top: 20px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+.dosBotones button{
+    width: 45%;
+}
+.botonLink{
+    display: none;
+}
+@media screen and (max-width: 768px){
+    .dosBotones{
+        flex-direction: column;
+        align-items: center;
+    }
+    .dosBotones button{
+        width: 70%;
+        margin-bottom: .5rem;
+    }
+    .botonLink{
+        display: flex;
+        width: 40px;
+        height: 30px;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    #div1,#div2,#div3{
+        border-bottom: black solid 2px;
+        width: 40px;
+    }
+}

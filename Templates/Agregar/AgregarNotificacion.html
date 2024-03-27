@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/BaseCSS/common.css">
+    <link rel="stylesheet" href="/static/BaseCSS/agregar.css">
+    <title>Agregar notificacion</title>
+</head>
+<body>
+    <form action="" method="post" class="cAgregarEve">
+        <section>
+            <h3>Destinatarios/as</h3>
+            <section id="Destinatario">
+                {% for tdoc, doc, ape, nom, cate, id in usuario %}
+                    <div>
+                        <input type="checkbox" name="Destino" id="{{id}}" value="{{tdoc}},{{doc}}">{{ape}} {{nom}} {{cate}}
+                    </div>
+                {% endfor %}
+            </section>
+        </section>
+        <section>
+            <h3>Descripcion</h3>
+            <textarea name="Descripcion" id="Descripcion" cols="30" rows="10"></textarea>
+        </section>
+        <div class="dosBotones">
+            <button class="btnRedondeado" type="submit">Aceptar</button>
+            <button class="btnRedondeado" type="button" onclick="location.href='/MainBase'">Regresar</button>
+        </div>
+    </form>
+</body>
+<script src="/static/BaseJs/notificacion.js"></script>
+</html>

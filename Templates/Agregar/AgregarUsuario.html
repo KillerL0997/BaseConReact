@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/BaseCSS/common.css">
+    <link rel="stylesheet" href="/static/BaseCSS/agregar.css">
+    <title>Agregar usuario</title>
+</head>
+<body>
+    <form action="" method="post" class="cAgregarUsu">
+        <section>
+            <label for="Nombre">Nombre</label>
+            <input name="Nombre" type="text">
+        </section>
+        <section>
+            <label for="Apellido">Apellido</label>
+            <input name="Apellido" type="text">
+        </section>
+        <section>
+            <label for="Categoria">Categoria</label>
+            <select name="Categoria" id="Categoria">
+                {% for id, tipo in categoria %}
+                    <option value="{{id}}">{{tipo}}</option>
+                {% endfor %}
+            </select>
+        </section>
+        <section>
+            <label for="Cargo">Cargo</label>
+            <select name="Cargo" id="Cargo">
+                {% for id, tipo in cargo %}
+                    <option value="{{id}}">{{tipo}}</option>
+                {% endfor %}
+            </select>
+        </section>
+        <section>
+            <label for="Email">Email</label>
+            <input type="email" name="Email">
+        </section>
+        <section>
+            <label for="TipoDocumento">Documento</label>
+            <div class="selInpu">
+                <select name="TipoDocumento" id="TipoDocumento">
+                    {% for id, tipo in tDoc %}
+                        <option value="{{id}}">{{tipo}}</option>
+                    {% endfor %}
+                </select>
+                <input type="text" name="Documento" id="Documento">
+            </div>
+        </section>
+        <section>
+            <label for="Cabeza">Cabeza de grupo</label>
+            <select name="Cabeza" id="Cabe">
+                {% for tDoc, doc, ape, nom, cate in cabeza %}
+                    <option value="{{tDoc}},{{doc}}">{{ape}} {{nom}} {{cate}}</option>
+                {% endfor %}
+            </select>
+        </section>
+        <section>
+            <label for="Instructor">Instructor</label>
+            <select name="Instructor" id="Instru">
+                {% for tDoc, doc, ape, nom, cate in instructor %}
+                    <option value="{{tDoc}},{{doc}}">{{ape}} {{nom}} {{cate}}</option>
+                {% endfor %}
+            </select>
+        </section>
+        <div class="dosBotones">
+            <button class="btnRedondeado" type="submit">Aceptar</button>
+            <button class="btnRedondeado" type="button" onclick="location.href='/MainBase'">Regresar</button>
+        </div>
+    </form>
+</body>
+</html>

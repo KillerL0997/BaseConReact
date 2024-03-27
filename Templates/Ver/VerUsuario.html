@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/BaseCSS/common.css">
+    <link rel="stylesheet" href="/static/BaseCSS/ver.css">
+    <title>Ver usuarios</title>
+</head>
+<body>
+    <div id="detalles" style="display: none;">
+        <button class="btnRedondeado" onclick="cerrar()">X</button>
+        <div id="detaUsu"></div>
+        <div class="tresBotones">
+            <button id="btnEditar" class='btnRedondeado'>Editar</button>
+            <button id="btnGimUsu" class='btnRedondeado'>Ver gimnasios</button>
+            <button id="contraUsu" class='btnRedondeado'>Ver contraseña</button>
+        </div>
+    </div>
+    <div class="botonLink" id="botonLink">
+        <div id="div1"></div>
+        <div id="div2"></div>
+        <div id="div3"></div>
+    </div>
+    <div class="contenedor">
+        <section class="filtro">
+            <button class="btnRedondeado" onclick="verUsuario(1)">Ver administradores</button>
+            <button class="btnRedondeado" onclick="verUsuario(2)">Ver cabezas de grupo</button>
+            <button class="btnRedondeado" onclick="verInstructores()">Ver instructores</button>
+            <button class="btnRedondeado" onclick="verUsuario(3)">Ver usuarios</button>
+            <button class="btnRedondeado" onclick="verTodoUsuario()">Ver todos</button>
+            <button class="btnRedondeado" onclick="location.href='/MainBase'">Regresar</button>
+        </section>
+        <table border="1" class="tabla">
+            <thead>
+                <th>Apellido</th>
+                <th>Nombre</th>
+                <th>Categoria</th>
+                <th>Ver</th>
+                <th>Eliminar</th>
+            </thead>
+            <tbody id="TablaUsuario"></tbody>
+        </table>
+    </div>
+</body>
+<script src="/static/BaseJs/verUsuario.js"></script>
+<script src="/static/BaseJs/enlaceMovil.js"></script>
+</html>

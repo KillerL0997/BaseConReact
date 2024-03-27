@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/BaseCSS/common.css">
+    <link rel="stylesheet" href="/static/BaseCSS/agregar.css">
+    <title>Editar alumno</title>
+</head>
+<body>
+    <input type="hidden" id="hidden" value="{{tdoc}},{{doc}}">
+    <form action="" method="post" enctype="multipart/form-data" class="cAgregarUsu">
+        <section>
+            <label for="Nombre">Nombre</label>
+            <input type="text" name="Nombre" id="Nombre">
+        </section>
+        <section>
+            <label for="Apellido">Apellido</label>
+            <input type="text" name="Apellido" id="Apellido">
+        </section>
+        <section>
+            <label for="TipoDocumento">Documento</label>
+            <div class="selInpu">
+                <select name="TipoDocumento" id="TipoDocumento">
+                    {% for id,tipo in tDoc %}
+                        <option value="{{id}}">{{tipo}}</option>
+                    {% endfor %}
+                </select>
+                <input type="text" name="Documento" id="Documento">
+            </div>
+        </section>
+        <section>
+            <label for="Categoria">Categoria</label>
+            <select name="Categoria" id="Categoria">
+                {% for id,tipo in categoria%}
+                    <option value="{{id}}">{{tipo}}</option>
+                {% endfor %}
+            </select>
+        </section>
+        <section>
+            <label for="Nacionalidad">Nacionalidad</label>
+            <input type="text" name="Nacionalidad" id="Nacionalidad">
+        </section>
+        <section>
+            <label for="fInscripcion">Fecha de inscripcion</label>
+            <input type="date" name="fInscripcion" id="fInscripcion">
+        </section>
+        <section>
+            <label for="Observaciones">Observaciones</label>
+            <input type="text" name="Observaciones" id="Observaciones">
+        </section>
+        <section>
+            <label for="Mail">E-mail</label>
+            <input type="text" name="Mail" id="Mail">
+        </section>
+        <section>
+            <label for="Localidad">Localidad</label>
+            <input type="text" name="Localidad" id="Localidad">
+        </section>
+        <section>
+            <label for="fNacimiento">Fecha de nacimiento</label>
+            <input type="date" name="fNacimiento" id="fNacimiento">
+        </section>
+        <section id="Contacto">
+            <h4>Contacto</h4>
+            <button class="btnRedondeado" type="button" onclick="agregarTelefono()">Agregar</button>
+            <section id="ContactoAlumno"></section>
+        </section>
+        <section>
+            <label for="Libreta">Libreta</label>
+            <div class="radio">
+                <input type="radio" name="Libreta" id="" value="1">
+                <p>Si</p>
+                <input type="radio" name="Libreta" id="" value="0">
+                <p>No</p>
+            </div>
+        </section>
+        <section>
+            <label for="Foto">Foto</label>
+            <input type="file" name="Foto" id="">
+        </section>
+        <section>
+            <label for="Instructor">Instructor</label>
+            <select name="Instructor" id="Instru">
+                {% for tdoc, doc, ape, nom, cate in usuario %}
+                    <option value="{{tdoc}},{{doc}}">{{ape}} {{nom}} {{cate}}</option>
+                {% endfor %}
+            </select>
+        </section>
+        <section>
+            <label for="Gimnasio">Gimnasio</label>
+            <select name="Gimnasio" id="Gim">
+            </select>
+        </section>        
+        <div class="dosBotones">
+            <button class="btnRedondeado" type="submit">Aceptar</button>
+            <button class="btnRedondeado" type="button" onclick="location.href='/vAlumno'">Regresar</button>
+        </div>
+    </form>
+</body>
+<script src="/static/BaseJs/editarAlumno.js"></script>
+<script src="/static/BaseJs/alumno.js"></script>
+</body>
+</html>

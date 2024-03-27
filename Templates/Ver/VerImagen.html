@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/BaseCSS/common.css">
+    <link rel="stylesheet" href="/static/BaseCSS/ver.css">
+    <title>Ver fotos</title>
+</head>
+<body>
+    <div class="botonLink" id="botonLink">
+        <div id="div1"></div>
+        <div id="div2"></div>
+        <div id="div3"></div>
+    </div>
+    <section class="contenedor">
+        <div class="filtro">
+            <button class="btnRedondeado" onclick="filtrarImagen(1)">Ver examen</button>
+            <button class="btnRedondeado" onclick="filtrarImagen(2)">Ver torneo</button>
+            <button class="btnRedondeado" onclick="filtrarImagen(3)">Ver varios</button>
+            <button class="btnRedondeado" onclick="vTodoImagen()">Ver todo</button>
+            <button class="btnRedondeado" onclick="location.href='/MainBase'">Regresar</button>
+        </div>
+        <div id="contenedor" class="tablaImagen"></div>
+    </section>
+</body>
+<script src="/static/BaseJs/verImagen.js"></script>
+<script src="/static/BaseJs/enlaceMovil.js"></script>
+</html>

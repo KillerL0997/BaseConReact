@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/BaseCSS/common.css">
+    <link rel="stylesheet" href="/static/BaseCSS/inicio.css">
+    <title>Inicio</title>
+</head>
+<body>
+    <div class="botonLink" id="botonLink">
+        <div id="div1"></div>
+        <div id="div2"></div>
+        <div id="div3"></div>
+    </div>
+    <section class="entorno">
+        <section class="enlaces">
+            {% if cargo == 1 %}
+                <button class="btnRedondeado" onclick="location.href='/aUsuario'">Agregar usuario</button>
+                <button class="btnRedondeado" onclick="location.href='/vUsuario'">Ver usuarios</button>
+                <button class="btnRedondeado" onclick="location.href='/aEvento'">Agregar evento</button>
+                <button class="btnRedondeado" onclick="location.href='/aNotificacion'">Agregar notificacion</button>
+                <button class="btnRedondeado" onclick="location.href='/vImagen'">Ver imagenes</button>
+                <button class="btnRedondeado" onclick="location.href='/aImagen'">Agregar fotos de eventos</button>
+                {% endif %}
+            {% if cargo == 1 or cargo == 2 %}
+                <button class="btnRedondeado" onclick="location.href='/aGimnasio'">Agregar gimnasio</button>
+            {% endif %}
+            {% if cargo == 1 or cargo == 2 or gim %}
+                <button class="btnRedondeado" onclick="location.href='/aAlumno'">Agregar alumno</button>
+                <button class="btnRedondeado" onclick="location.href='/vGimnasio'">Ver gimnasios</button>
+                <button class="btnRedondeado" onclick="location.href='/vAlumno'">Ver alumnos</button>
+            {% endif %}
+            <button class="btnRedondeado" onclick="location.href='/eUsuario/{{tdoc}}/{{doc}}/MainBase'">Cambiar datos</button>
+            <button class="btnRedondeado" onclick="location.href='/cambiarContra/{{tdoc}}/{{doc}}'">Cambiar contraseña</button>
+            <button class="btnRedondeado" onclick="location.href='/vEvento'">Ver eventos</button>
+            <button class="btnRedondeado" onclick="location.href='/logout'">Salir</button>
+        </section>
+        <section class="contNoti">
+            {% for id, text in noti %}
+                <div class="notificacion">
+                    <button class="btnRedondeado botonNoti" onclick="location.href='/eNotificacion/{{id}}'">X</button>
+                    <p>{{text}}</p>
+                </div>
+            {% endfor %}
+        </section>
+    </section>
+</body>
+<script src="/static/BaseJs/enlaceMovil.js"></script>
+</html>

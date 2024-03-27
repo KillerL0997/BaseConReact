@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/BaseCSS/common.css">
+    <link rel="stylesheet" href="/static/BaseCSS/agregar.css">
+    <title>Subir fotos</title>
+</head>
+<body>
+    <form action="" method="post" enctype="multipart/form-data" class="cAgregarFoto">
+        <section>
+            <select name="Evento" id="">
+                {% for idEve, fecha, tipo in evento %}
+                    <option value="{{idEve}}">{{tipo}}: {{fecha}}</option>
+                {% endfor%}
+            </select>
+        </section>
+        <section>
+            <label for="Foto">Fotos:</label>
+            <input type="file" name="Foto" id="" multiple>
+        </section>
+        <div class="dosBotones">
+            <button class="btnRedondeado" type="submit">Aceptar</button>
+            <button class="btnRedondeado" type="button" onclick="location.href='/MainBase'">Regresar</button>
+        </div>
+    </form>
+</body>
+</html>

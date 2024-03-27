@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/BaseCSS/common.css">
+    <link rel="stylesheet" href="/static/BaseCSS/ver.css">
+    <title>Ver eventos</title>
+</head>
+<body>
+    <div id="detalles" style="display: none;">
+        <button class="btnRedondeado" onclick="cerrar()">X</button>
+        <div id="detalleEvento"></div>
+        <div class="dosBotones">
+            <button id="btnEditar" class='btnRedondeado'>Editar</button>
+            <button id="btnAluExa" class='btnRedondeado'></button>
+        </div>
+    </div>
+    <div class="botonLink" id="botonLink">
+        <div id="div1"></div>
+        <div id="div2"></div>
+        <div id="div3"></div>
+    </div>
+    <div class="contenedor">
+        <section class="filtro">
+            <div>
+                <label>Tipo de evento</label>
+                <select id="tipoEvento">
+                    {% for idte, tevento in tEvento %}
+                        <option value="{{idte}}">{{tevento}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label>Desde</label>
+                <input type="date" id="fDesde">
+            </div>
+            <div>
+                <label>Hasta</label>
+                <input type="date" id="fHasta">
+            </div>
+            <div>
+                <button class="btnRedondeado" onclick="verEvento()">Aceptar</button>
+                <button class="btnRedondeado" onclick="location.href='/MainBase'">Regresar</button>
+            </div>
+        </section>
+        <table border="1" class="tabla">
+            <thead>
+                <th>Fecha</th>
+                <th>Tipo</th>
+                <th>Ver</th>
+            </thead>
+            <tbody id="TablaEvento"></tbody>
+        </table>
+    </div>
+</body>
+<script src="/static/BaseJs/verEvento.js"></script>
+<script src="/static/BaseJs/enlaceMovil.js"></script>
+</html>

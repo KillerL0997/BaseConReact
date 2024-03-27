@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/BaseCSS/common.css">
+    <link rel="stylesheet" href="/static/BaseCSS/ver.css">
+    <title>Ver gimnasios</title>
+</head>
+<body>
+    <div class="botonLink" id="botonLink">
+        <div id="div1"></div>
+        <div id="div2"></div>
+        <div id="div3"></div>
+    </div>
+    <div class="contenedor">
+        <div id="detalles" style="display: none;">
+            <button class="btnRedondeado" onclick="cerrar()">X</button>
+            <div id="detaGim"></div>
+            <div class="dosBotones">
+                <button id="btnEditar" class='btnRedondeado'>Editar</button>
+                <button id="btnAluGim" class='btnRedondeado'></button>
+            </div>
+        </div>
+        <section class="filtro">
+            <h4 id="Titulo">Instructor</h4>
+            <select name="" id="Instructor">
+                {% for tdoc, doc, nom, ape, cate in usuario %}
+                    <option value="{{tdoc}},{{doc}}">{{nom}} {{ape}} {{cate}}</option>
+                {% endfor %}
+            </select>
+            <button class="btnRedondeado" onclick="verDesaHabi(0)" id="vDeshabilitado">Ver deshabilitados</button>
+            <button class="btnRedondeado" onclick="verDesaHabi(1)" style="display: none;" id="vHabilitado">Ver habilitados</button>
+            <button class="btnRedondeado" onclick="location.href='/MainBase'">Regresar</button>
+        </section>
+        <table border="1" class="tabla">
+            <thead>
+                <th>Nombre</th>
+                <th>Dirección</th>
+                <th></th>
+                <th></th>
+            </thead>
+            <tbody id="tableGimnsaio"></tbody>
+        </table>
+    </div>
+</body>
+<script src="/static/BaseJs/verGimnasio.js"></script>
+<script src="/static/BaseJs/enlaceMovil.js"></script>
+</html>

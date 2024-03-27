@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/BaseCSS/common.css">
+    <link rel="stylesheet" href="/static/BaseCSS/agregar.css">
+    <title>Agregar evento</title>
+</head>
+<body>
+    <form action="" method="post" class="cAgregarEve">
+        <section>
+            <label for="Fecha">Fecha</label>
+            <input type="date" name="Fecha" id="">
+        </section>
+        <section>
+            <label for="Tipo">Tipo</label>
+            <select name="Tipo" id="">
+                {% for id, tipo in tipoEvento %}
+                    <option value="{{id}}">{{tipo}}</option>
+                {% endfor %}
+            </select>
+        </section>
+        <section>
+            <label for="Descripcion">Descripcion</label>
+            <textarea name="Descripcion" id="Descripcion" cols="30" rows="10"></textarea>
+        </section>
+        <div class="dosBotones">
+            <button class="btnRedondeado" type="submit">Aceptar</button>
+            <button class="btnRedondeado" type="button" onclick="location.href='/MainBase'">Regresar</button>
+        </div>
+    </form>
+</body>
+</html>

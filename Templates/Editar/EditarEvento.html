@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/BaseCSS/common.css">
+    <link rel="stylesheet" href="/static/BaseCSS/agregar.css">
+    <title>Editar evento</title>
+</head>
+<body>
+    <input type="hidden" id="hidden" value="{{idEve}}">
+    <form action="" method="post" class="cAgregarEve">
+        <section>
+            <label for="Fecha">Fecha</label>
+            <input type="date" name="Fecha" id="Fecha">
+        </section>
+        <section>
+            <label for="Tipo">Tipo</label>
+            <select name="Tipo" id="Tipo">
+                {% for id, tipo in tipoEvento %}
+                    <option value="{{id}}">{{tipo}}</option>
+                {% endfor %}
+            </select>
+        </section>
+        <section>
+            <label for="Descripcion">Descripcion</label>
+            <textarea name="Descripcion" id="Descripcion" cols="30" rows="10"></textarea>
+        </section>
+        <div class="dosBotones">
+            <button class="btnRedondeado" type="submit">Aceptar</button>
+            <button class="btnRedondeado" type="button" onclick="location.href='/vEvento'">Regresar</button>
+        </div>
+    </form>
+</body>
+<script src="/static/BaseJs/editarEvento.js"></script>
+</html>

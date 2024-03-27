@@ -1,0 +1,21 @@
+.contenedor{
+    width: 40%;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    margin: 15% 30%;
+    align-items: center;
+    background-color: darkgrey;
+    border-radius: 20px;
+    border: solid black 2px;
+}
+.contenedor input{
+    width: 70%;
+}
+@media screen and (max-width: 768px){
+    .contenedor{
+        margin: 0;
+        width: 100%;
+        margin-top: 5rem;
+    }
+}

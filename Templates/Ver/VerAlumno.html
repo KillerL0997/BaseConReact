@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/BaseCSS/common.css">
+    <link rel="stylesheet" href="/static/BaseCSS/ver.css">
+    <title>Ver alumnos</title>
+</head>
+
+<body>
+    <div id="detalles" style="display: none;">
+        <button class="btnRedondeado" onclick="cerrar()">X</button>
+        <div id="detaAlu"></div>
+        <div class="tresBotones">
+            <button class='btnRedondeado' id="btnEditarAlu"></button>
+            <button class='btnRedondeado' id="btnEventoAlu"></button>
+            <button class='btnRedondeado' id="btnMatrialu"></button>
+            <button class='btnRedondeado' id="regresar" style="display: none;">Regresar</button>
+        </div>
+    </div>
+    <div class="botonLink" id="botonLink">
+        <div id="div1"></div>
+        <div id="div2"></div>
+        <div id="div3"></div>
+    </div>
+    <section class="contenedor">
+        <div class="filtro">
+            <div>
+                <label for="Nombre">Nombre</label>
+                <input type="text" id="Nombre">
+            </div>
+            <div>
+                <label for="Apellido">Apellido</label>
+                <input type="text" id="Apellido">
+            </div>
+            <div>
+                <label for="Categoria">Categoria</label>
+                <select id="Categoria">
+                    {% for idCate, cate in categoria %}
+                    <option value="{{idCate}}">{{cate}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <h4 id="asignaUsuario"></h4>
+                <div class="selUsuGim">
+                    <select id="usuAlu">
+                        {% for tdoc, doc, ape, nom, cate in usuario %}
+                            <option value="{{tdoc}},{{doc}}">{{ape}} {{nom}} {{cate}}</option>
+                        {% endfor %}
+                    </select>
+                    <select id="usuGim">
+                        {% for id, nom in gimnasio %}
+                            <option value="{{id}}">{{nom}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div name="habiDesa">
+                <h4>Ultimo examen</h4>
+                <div>
+                    <label for="fdExamen">Desde</label>
+                    <input type="date" id="fdExamen">
+                </div>
+                <div>
+                    <label for="fhExamen">Hasta</label>
+                    <input type="date" id="fhExamen">
+                </div>
+            </div>
+            {% if cargo %}
+                <div name="habiDesa">
+                    <h4>AATEE</h4>
+                    <div>
+                        <label for="fdAATEE">Desde</label>
+                        <input type="date" id="fdAATEE">
+                    </div>
+                    <div>
+                        <label for="fhAATEE">Hasta</label>
+                        <input type="date" id="fhAATEE">
+                    </div>
+                </div>
+                <div name="habiDesa">
+                    <h4>Enat</h4>
+                    <div>
+                        <label for="fdEnat">Desde</label>
+                        <input type="date" id="fdEnat">
+                    </div>
+                    <div>
+                        <label for="fhEnat">Hasta</label>
+                        <input type="date" id="fhEnat">
+                    </div>
+                </div>
+                <div name="habiDesa">
+                    <h4>Fetra</h4>
+                    <div>
+                        <label for="fdFetra">Desde</label>
+                        <input type="date" id="fdFetra">
+                    </div>
+                    <div>
+                        <label for="fhFetra">Hasta</label>
+                        <input type="date" id="fhFetra">
+                    </div>
+                </div>
+            {% endif %}
+            <div name="habiDesa">
+                {% if exaCap %}
+                    <button class="btnRedondeado" onclick="aAluEven(1)">Examen capital: {{exaCap}}</button>
+                {% endif %}
+                {% if exaProv %}
+                    <button class="btnRedondeado" onclick="aAluEven(1)">Examen provincia: {{exaProv}}</button>
+                {% endif %}
+                {% if tor %}
+                    <button class="btnRedondeado" onclick="aAluEven(2)">Torneo: {{tor}}</button>
+                {% endif %}
+                {% if otro %}
+                    <button class="btnRedondeado" onclick="aAluEven(3)">Evento: {{otro}}</button>
+                {% endif %}
+            </div>
+            <div name="habiDesa">
+                <button class="btnRedondeado" onclick="aluMatri(1)">AATEE</button>
+                <button class="btnRedondeado" onclick="aluMatri(2)">Enat</button>
+                <!-- <button class="btnRedondeado" onclick="aluMatri(3)">Fetra</button> -->
+            </div>
+            <div name="habiDesa"> 
+                <button class="btnRedondeado" onclick="desaAlu()">Deshabilitar</button>
+                <button class="btnRedondeado" onclick="vDesaAlu()">Ver deshabilitados</button>
+            </div>
+            <div name="dasaHabi">
+                <button class="btnRedondeado" onclick="elimAlu()">Eliminar</button>
+                <button class="btnRedondeado" onclick="habiAlu()">Habilitar</button>
+            </div>
+            <div name="dasaHabi">
+                <button class="btnRedondeado" onclick="botVerHabi()">Ver habilitados</button>
+            </div>
+            <div>
+                <button class="btnRedondeado" id="botFiltro" onclick="filtroAlumno()">Aceptar</button>
+                <button class="btnRedondeado" onclick="location.href='/MainBase'">Regresar</button>
+            </div>
+        </div>
+        <table border="1" class="tabla">
+            <thead>
+                <th></th>
+                <th name="celDesaHabi">Deshabilitado</th>
+                <th name="celhabiDesa">Ult. examen</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Edad</th>
+                <th name="celhabiDesa">Instructor</th>
+                <th name="celhabiDesa">Gimnasio</th>
+                <th>Categoria</th>
+                {% if cargo %}
+                    <th name="celhabiDesa">Enat</th>
+                    <th name="celhabiDesa">AATEE</th>
+                    <!-- <th name="celhabiDesa">Fetra</th> -->
+                {% endif %}
+                <th name="celhabiDesa"></th>
+            </thead>
+            <tbody id="TablaAlumno"></tbody>
+        </table>
+    </section>
+</body>
+<script src="/static/BaseJs/verAlumno.js"></script>
+<script src="/static/BaseJs/enlaceMovil.js"></script>
+</html>

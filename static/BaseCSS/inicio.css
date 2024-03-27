@@ -1,0 +1,34 @@
+.enlaces{
+    width: 20%;
+}
+.entorno{
+    width: 100%;
+    height: 100%;
+    display: flex;
+}
+.contNoti{
+    width: 60%;
+    margin: 0 10%;
+    text-align: center;
+}
+.notificacion{
+    width: 100%;
+    margin-top: 1rem;
+}
+.botonNoti{
+    width: 25px;
+    float: right;
+}
+@media screen and (max-width: 768px){
+    .enlaces{
+        background-color: darkgrey;
+        width: 35%;
+        z-index: 1;
+        position: fixed;
+        display: flex;
+        flex-direction: column;
+    }
+    .contNoti{
+        width: 100%;
+    }
+}
