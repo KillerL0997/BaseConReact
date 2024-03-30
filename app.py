@@ -24,6 +24,7 @@ conn = pyodbc.connect(
 # def index():
 #     return app.send_static_file("index.html")
 
+
 @app.route("/gimPagina")
 def gimPagina():
     gim = conn.execute(
@@ -31,7 +32,7 @@ def gimPagina():
     ).fetchall()
     dicGim = {
         'id': [], 'nombre': [], 'direc': [], 'face': [], 'insta': [], 'ubi': [],
-        'whats': [], 'logo': [], 'lim' : 0, 'instru': [], 'horario': []
+        'whats': [], 'logo': [], 'lim': 0, 'instru': [], 'horario': []
     }
     for id, nom, dir, face, insta, ubi, whats, logo in gim:
         instru = ""
@@ -48,7 +49,8 @@ def gimPagina():
         for nom, ape in conn.execute(
             "select u.nombre, u.apellido "
             "from gimnasio g, usuario u, enseñaen ee "
-            "where ee.idgim=g.id and ee.tdoc=u.tdoc and ee.doc=u.documento and g.id='" + str(id) + "'"  
+            "where ee.idgim=g.id and ee.tdoc=u.tdoc and ee.doc=u.documento and g.id='" +
+                str(id) + "'"
         ).fetchall():
             instru += f'{nom} {ape} '
         dicGim['instru'].append(instru[:-1])
@@ -57,9 +59,11 @@ def gimPagina():
             "from horario h, dia d "
             "where h.idgim='" + str(id) + "' and h.dia=d.id"
         ).fetchall():
-            hora.append(f'<p>{dia} de {eIni} a {eFin} años: {hIni} a {hFin} Hs</p>,')
+            hora.append(
+                f'<p>{dia} de {eIni} a {eFin} años: {hIni} a {hFin} Hs</p>,')
         dicGim['horario'].append(hora[:-1])
     return jsonify(dicGim)
+
 
 @app.route("/fechaEvento")
 def fechaEvento():
@@ -79,12 +83,14 @@ def fechaEvento():
         'fExamen': fExamen, 'fTorneo': fTorneo, 'fEvento': fEvento
     })
 
+
 def fechaEvento(tipo):
     return conn.execute(
         "select isnull(convert(varchar,min(e.fecha),3),'') "
         "from evento e "
         "where e.tipo='" + str(tipo) + "' and e.fecha >= getdate()"
     ).fetchone()[0]
+
 
 @app.route("/buscaFotos")
 def buscaFotos():
@@ -104,17 +110,19 @@ def buscaFotos():
         'vecExa': vecExa, 'vecTor': vecTor, 'vecEve': vecEve
     })
 
+
 def buscaFotosEvento(tipo):
     return conn.execute(
         "select i.direccion, 1 "
         "from imagen i, ("
-            "select top 1 e.id as idEve "
-            "from evento e "
-            "where e.tipo='" + tipo + "' and e.fecha <= getdate() "
-            "order by e.fecha DESC"
+        "select top 1 e.id as idEve "
+        "from evento e "
+        "where e.tipo='" + tipo + "' and e.fecha <= getdate() "
+        "order by e.fecha DESC"
         ") as eve "
         "where i.idevento=eve.idEve"
     ).fetchall()
+
 
 @app.route("/")
 @app.route("/MainBase")
@@ -123,40 +131,48 @@ def main():
         return redirect(url_for("login"))
     gim = conn.execute(
         "select 1 from gimnasio g, enseñaen ee "
-        "where ee.tdoc=" + str(session['tdoc']) + " and ee.doc='" + session['doc']
+        "where ee.tdoc=" + str(session['tdoc']) +
+        " and ee.doc='" + session['doc']
         + "' and ee.idgim=g.id"
     ).fetchall()
     noti = conn.execute(
         "select n.id, n.texto "
         "from notificacion n, notifica nt "
-        "where nt.tdoc=" + str(session['tdoc']) + " and nt.documento='" + session['doc']
+        "where nt.tdoc=" + str(session['tdoc']) +
+        " and nt.documento='" + session['doc']
         + "' and nt.idnoti=n.id "
     ).fetchall()
     return render_template(
-        "Inicio.html", tdoc = session['tdoc'], doc = session['doc'],
-        cargo = session['cargo'], gim = gim, noti = noti
+        "Inicio.html", tdoc=session['tdoc'], doc=session['doc'],
+        cargo=session['cargo'], gim=gim, noti=noti
     )
 
-def tiempoSesion(): 
+
+def tiempoSesion():
     tiempo = conn.execute(
         "select u.sesion from usuario u "
         "where u.tdoc=" + str(session['tdoc'])
         + " and u.documento='" + session['doc'] + "'"
-    ).fetchone()[0]
-    if tiempo and tiempo + timedelta(hours=1) < datetime.now():
-        return redirect(url_for("logout")) 
+    ).fetchone()
+    if not tiempo:
+        return redirect(url_for("logout"))
+    if tiempo[0] + timedelta(hours=1) < datetime.now():
+        return redirect(url_for("logout"))
     upTabla(
-        "usuario","sesion=getdate()",
-        "tdoc=" + str(session['tdoc']) + " and documento='" + session['doc'] + "'"
+        "usuario", "sesion=getdate()",
+        "tdoc=" + str(session['tdoc']) +
+        " and documento='" + session['doc'] + "'"
     )
     conn.commit()
+
 
 @app.route("/login", methods={"GET", "POST"})
 def login():
     if request.method == 'POST':
         usu = conn.execute(
             "select u.tdoc, u.documento, u.cargo from usuario u "
-            "where u.email='" + request.form.get("mail") +"' and u.contraseña='"
+            "where u.email='" +
+            request.form.get("mail") + "' and u.contraseña='"
             + request.form.get("contra") + "'"
         ).fetchone()
         if usu:
@@ -164,12 +180,14 @@ def login():
             session['doc'] = usu[1]
             session['cargo'] = usu[2]
             upTabla(
-                "usuario","sesion=getdate()",
-                "tdoc=" + str(session['tdoc']) + " and documento='" + session['doc'] + "'"
+                "usuario", "sesion=getdate()",
+                "tdoc=" + str(session['tdoc']) +
+                " and documento='" + session['doc'] + "'"
             )
             conn.commit()
             return redirect("/MainBase")
     return render_template("Login.html")
+
 
 @app.route("/logout")
 def logout():
@@ -180,8 +198,9 @@ def logout():
     finally:
         return redirect("/MainBase")
 
-@app.route("/cambiarContra/<string:tdoc>/<string:doc>", methods={'GET','POST'})
-def cambiarContra(tdoc,doc):
+
+@app.route("/cambiarContra/<string:tdoc>/<string:doc>", methods={'GET', 'POST'})
+def cambiarContra(tdoc, doc):
     tiempoSesion()
     if request.method == 'POST':
         contra1 = request.form.get("contra_1")
@@ -193,18 +212,18 @@ def cambiarContra(tdoc,doc):
             ).fetchone()[0]
             if contra1 == contraUsu:
                 return render_template(
-                    "cambiarContra.html", msj = "La nueva contraseña es igual a la anterior"
+                    "cambiarContra.html", msj="La nueva contraseña es igual a la anterior"
                 )
             upTabla(
-                "usuario","contraseña='" + contra1 + "'",
+                "usuario", "contraseña='" + contra1 + "'",
                 "tdoc=" + tdoc + "and documento='" + doc + "'"
             )
             conn.commit()
             return redirect("/MainBase")
         return render_template(
-                    "cambiarContra.html", msj = "Las contraseñas no coinciden"
-                )
-    return render_template("cambiarContra.html", msj = "")
+            "cambiarContra.html", msj="Las contraseñas no coinciden"
+        )
+    return render_template("cambiarContra.html", msj="")
 
 # Agregar
 
@@ -242,12 +261,12 @@ def aUsuraio():
         )
         if int(cUsuario) == 2:
             insTabla(
-                "cabeza","tdoccabeza,doccabeza,tdoc,documento",
+                "cabeza", "tdoccabeza,doccabeza,tdoc,documento",
                 tDocUsu + ",'" + docUsu + "'," + tDocUsu + ",'" + docUsu + "'"
             )
         elif int(cUsuario) == 3:
             insTabla(
-                "instructor","tdocinstru,docinstru,tdoc,documento",
+                "instructor", "tdocinstru,docinstru,tdoc,documento",
                 tDocUsu + ",'" + docUsu + "'," + tDocUsu + ",'" + docUsu + "'"
             )
             aInstruCab("Cabe", "cabeza", "tdoccabeza",
@@ -305,7 +324,7 @@ def aGimnasio():
             + request.form.get("Contacto") + "','" +
             request.form.get("Facebook") + "','Imagenes"
             + url_for('obtener_nombre', filename=nombre)[8:] + "')"
-            )
+        )
         for dato in instru:
             dato = dato.split(",")
             if not conn.execute(
@@ -316,24 +335,25 @@ def aGimnasio():
                 conn.execute(
                     "insert into enseñaen(tdoc,doc,idgim) values("
                     + dato[0] + ",'" + dato[1] + "'," + str(i) + ")"
-                    )
+                )
                 conn.commit()
                 nomUsu = conn.execute(
                     "select u.apellido, u.nombre "
                     "from usuario u where u.tdoc=" +
                     dato[0] + " and u.documento='" + dato[1] + "'"
-                    ).fetchone()
+                ).fetchone()
                 os.makedirs(
                     f'static/Imagenes/{nomGim.replace(" ","")}/{nomUsu[0]}{nomUsu[1]}'
-                    )
+                )
         return redirect("/MainBase")
     return render_template("/Agregar/AgregarGimnasio.html")
+
 
 @app.route("/selGimInstru")
 def selGimInstru():
     tiempoSesion()
     condiEx = ""
-    if session['cargo'] == 2: 
+    if session['cargo'] == 2:
         condiEx = " and exists(select 1 from cabeza ca where ca.doccabeza='"
         condiEx += session['doc']
         condiEx += "' and ca.tdoccabeza=" + str(session['tdoc'])
@@ -349,6 +369,7 @@ def selGimInstru():
         dic['text'].append(f'{ape} {nom} {cate}')
         dic['lim'] += 1
     return jsonify(dic)
+
 
 @app.route("/aEvento", methods={'GET', 'POST'})
 def aEvento():
@@ -381,7 +402,7 @@ def aAlumno():
     categoria = conn.execute("select * from categoria").fetchall()
     tDoc = conn.execute("select * from tipodocumento").fetchall()
     condiEx = ""
-    if session['cargo'] == 2: 
+    if session['cargo'] == 2:
         condiEx = " and exists(select 1 from cabeza ca where ca.doccabeza='"
         condiEx += session['doc']
         condiEx += "' and ca.tdoccabeza=" + str(session['tdoc'])
@@ -398,7 +419,7 @@ def aAlumno():
         query + " group by u.tdoc,u.documento,u.apellido,u.nombre,c.tipo "
     ).fetchall()
     usuario.insert(0, ('', '', '', '', ''))
-    if request.method == 'POST':
+    if request.method == 'POST' and request.form.get("Instructor") and request.form.get("Gimnasio"):
         instru = request.form.get("Instructor").split(",")
         idGim = request.form.get("Gimnasio")
         nomGim = conn.execute(
@@ -408,7 +429,7 @@ def aAlumno():
             "select u.apellido, u.nombre from usuario u "
             "where u.tdoc=" + instru[0] + " and u.documento=" + instru[1]
         ).fetchone()
-        nombre = 'SinFoto.jpg'
+        nombre = 'sin_foto.png'
         if request.files["Foto"]:
             nombre = photos.save(
                 request.files["Foto"], f'{nomGim.replace(" ","")}/{nomUsu[0]}{nomUsu[1]}'
@@ -501,11 +522,13 @@ def aImagen():
     if request.method == 'POST' and request.files["Foto"]:
         idEve = request.form.get("Evento")
         direc = conn.execute(
-            "select i.direccion from imagen i "
-            "where i.idevento=" + idEve
+            "select i.direccion, 1 from imagen i, evento e, tipoevento te " 
+            "where i.idevento=e.id and e.tipo=te.id and e.tipo = ( "
+                "select eve.tipo from evento eve where eve.id='" + idEve + "' "
+            ")"
         ).fetchall()
-        for elim in direc:
-            os.remove(f'static/{elim[0]}')
+        for elim, _ in direc:
+            os.remove(f'static/{elim}')
         conn.execute(
             "delete from imagen where idevento=" + idEve
         )
@@ -513,7 +536,7 @@ def aImagen():
             "select te.tipo "
             "from evento e, tipoevento te "
             "where e.id=" + idEve + " and e.tipo=te.id"
-        ).fetchone()[0]
+        ).fetchone()[0].replace(" ","")
         for i in request.files.getlist("Foto"):
             nombre = photos.save(
                 i, f'Eventos/{tipo}'
@@ -614,7 +637,7 @@ def vGimnasio():
     usuario = conn.execute(
         "select u.tdoc, u.documento, u.nombre, u.apellido, c.tipo"
         " from usuario u, " + condiEx + ", categoria c"
-        " where u.documento=uee.doc and u.tdoc=uee.tdoc and c.id=u.categoria" 
+        " where u.documento=uee.doc and u.tdoc=uee.tdoc and c.id=u.categoria"
     ).fetchall()
     usuario.insert(0, ('', '', '', '', ''))
     return render_template(
@@ -645,16 +668,16 @@ def verTodoGimnasio():
     tiempoSesion()
     query = "(select ee.idgim from enseñaen ee group by ee.idgim) as tee"
     if session['cargo'] == 2:
-        query = "(select ee.idgim from enseñaen ee, cabeza c, usuario u where c.tdoccabeza=" 
+        query = "(select ee.idgim from enseñaen ee, cabeza c, usuario u where c.tdoccabeza="
         query += str(session['tdoc'])
-        query +=" and c.doccabeza='" + session['doc'] 
+        query += " and c.doccabeza='" + session['doc']
         query += "' and c.tdoc=u.tdoc and c.documento=u.documento "
         query += "and u.tdoc=ee.tdoc and u.documento=ee.doc "
         query += "GROUP BY ee.idgim) as tee"
     elif session['cargo'] == 3:
-        query = "(select ee.idgim from enseñaen ee, instructor i, usuario u where i.tdocinstru=" 
+        query = "(select ee.idgim from enseñaen ee, instructor i, usuario u where i.tdocinstru="
         query += str(session['tdoc'])
-        query +=" and i.docinstru='" + session['doc'] 
+        query += " and i.docinstru='" + session['doc']
         query += "' and i.tdoc=u.tdoc and i.documento=u.documento "
         query += "and u.tdoc=ee.tdoc and u.documento=ee.doc "
         query += "GROUP BY ee.idgim) as tee"
@@ -670,6 +693,22 @@ def verTodoGimnasio():
     llenarDiccionarioGimnasio(gimnasio, dicGim)
     return jsonify(dicGim)
 
+@app.route("/direcGimnasio/<int:idGim>")
+def direcGimnasio(idGim):
+    tiempoSesion()
+    return render_template("Detalles/DetalleGimnasio.html", idGim=idGim)
+
+@app.route("/dGimnasio/<int:idGim>")
+def dGimnasio(idGim):
+    tiempoSesion()
+    gim = conn.execute(
+        "select * from gimnasio g "
+        "where g.id=" + str(idGim)
+    ).fetchone()
+    return jsonify({
+        'nom': gim[1], 'direc': gim[2], 'ubi': gim[3], 'insta': gim[4],
+        'face': gim[6], 'whats': gim[5], 'logo': gim[7]
+    })
 
 @app.route("/verDesaHabi/<int:valor>")
 def verDesaHabi(valor):
@@ -685,8 +724,8 @@ def verDesaHabi(valor):
             "select g.id, g.nombre, g.direccion "
             "from gimnasio g "
             "where not exists ("
-                "select 1 from enseñaen ee "
-                "where ee.idgim=g.id"
+            "select 1 from enseñaen ee "
+            "where ee.idgim=g.id"
             ")"
         ).fetchall()
         dicGim['onclick'] = "habiGim"
@@ -776,26 +815,26 @@ def vAlumno():
     condiEx = ""
     if session['cargo'] == 2:
         condiEx += " and exists(select 1 from cabeza ca where ca.tdoccabeza="
-        condiEx += str(session['tdoc']) 
+        condiEx += str(session['tdoc'])
         condiEx += " and ca.doccabeza='" + session['doc']
         condiEx += "' and ca.tdoc=u.tdoc and ca.documento=u.documento)"
         condiGim += "select g.id, g.nombre "
         condiGim += "from gimnasio g, cabeza c, usuario u, enseñaen ee "
-        condiGim += "where c.tdoccabeza='" 
-        condiGim += str(session['tdoc']) 
+        condiGim += "where c.tdoccabeza='"
+        condiGim += str(session['tdoc'])
         condiGim += "' and c.doccabeza=" + session['doc']
         condiGim += " and c.tdoc=u.tdoc and c.documento=u.documento "
         condiGim += "and u.tdoc=ee.tdoc and u.documento=ee.doc"
         condiGim += " and ee.idgim=g.id group by g.id, g.nombre"
     elif session['cargo'] == 3:
         condiEx += " and exists(select 1 from instructor ca where ca.tdocinstru="
-        condiEx += str(session['tdoc']) 
+        condiEx += str(session['tdoc'])
         condiEx += " and ca.docinstru='" + session['doc']
         condiEx += "' and ca.tdoc=u.tdoc and ca.documento=u.documento)"
         condiGim += "select g.id, g.nombre "
         condiGim += "from gimnasio g, instructor i, usuario u, enseñaen ee "
-        condiGim += "where i.tdocinstru='" 
-        condiGim += str(session['tdoc']) 
+        condiGim += "where i.tdocinstru='"
+        condiGim += str(session['tdoc'])
         condiGim += "' and i.docinstru=" + session['doc']
         condiGim += " and i.tdoc=u.tdoc and i.documento=u.documento "
         condiGim += "and u.tdoc=ee.tdoc and u.documento=ee.doc"
@@ -807,26 +846,25 @@ def vAlumno():
         " from usuario u, categoria c"
         " where u.cargo <> 1 and u.categoria=c.id" + condiEx
     ).fetchall()
-    usuario.insert(0,("","","","",""))
+    usuario.insert(0, ("", "", "", "", ""))
     gimnasio = conn.execute(condiGim).fetchall()
-    gimnasio.insert(0,("",""))
+    gimnasio.insert(0, ("", ""))
     return render_template(
         "/Ver/VerAlumno.html", categoria=categoria,
-        exaCap = exaCap, exaProv =exaProv, tor = tor, otro = otro, usuario=usuario,
-        gimnasio = gimnasio, cargo = True if session['cargo'] == 1 else False
+        exaCap=exaCap, exaProv=exaProv, tor=tor, otro=otro, usuario=usuario,
+        gimnasio=gimnasio, cargo=True if session['cargo'] == 1 else False
     )
 
 
 @app.route(
-        "/filtroAlumno/<string:nom>/<string:ape>/<string:cate>"
-        "/<string:fdExamen>/<string:fhExamen>/<string:fdAATEE>"
-        "/<string:fhAATEE>/<string:fdEnat>/<string:fhEnat>"
-        "/<string:fdFetra>/<string:fhFetra>/<string:tdocUsu>"
-        "/<string:docUsu>/<string:idGim>"
+    "/filtroAlumno/<string:nom>/<string:ape>/<string:cate>"
+    "/<string:fdExamen>/<string:fhExamen>/<string:fdAATEE>"
+    "/<string:fhAATEE>/<string:fdEnat>/<string:fhEnat>"
+    "/<string:tdocUsu>/<string:docUsu>/<string:idGim>"
 )
 def filtroAlumno(
     nom, ape, cate, fdExamen, fhExamen,
-    fdAATEE, fhAATEE, fdEnat, fhEnat, fdFetra, fhFetra,
+    fdAATEE, fhAATEE, fdEnat, fhEnat,
     tdocUsu, docUsu, idGim
 ):
     tiempoSesion()
@@ -834,8 +872,7 @@ def filtroAlumno(
     query += " alucate.tipo, alucate.insNombre, alucate.insApellido, alucate.gimNombre,"
     query += " ISNULL(CONVERT(varchar,pEvento.fecha,3),'--') as fEvento"
     query += ", ISNULL(CONVERT(varchar,aatee.fecha,3),'--') as fAATEE,"
-    query += " ISNULL(CONVERT(varchar,enat.fecha,3),'--') as fEnat,"
-    query += " ISNULL(CONVERT(varchar,fetra.fecha,3),'--') as fFetra "
+    query += " ISNULL(CONVERT(varchar,enat.fecha,3),'--') as fEnat "
     query += "from (SELECT a.tdoc, a.documento, a.nombre, a.apellido, c.tipo,"
     query += " floor((cast(convert(varchar(8),getdate(),112) as int) - "
     query += "cast(convert(varchar(8),a.fnac,112) as int)) / 10000) as edad,"
@@ -855,14 +892,16 @@ def filtroAlumno(
         if idGim != "-":
             query += "a.idgim=" + idGim + " and "
     elif session['cargo'] == 2:
-        query += "exists (select 1 from usuario u, cabeza c where c.tdoccabeza= " 
-        query += str(session['tdoc']) +" and c.doccabeza='" 
-        query += session['doc'] + "' and u.tdoc=c.tdoc and u.documento=c.documento"
+        query += "exists (select 1 from usuario u, cabeza c where c.tdoccabeza= "
+        query += str(session['tdoc']) + " and c.doccabeza='"
+        query += session['doc'] + \
+            "' and u.tdoc=c.tdoc and u.documento=c.documento"
         query += " and a.tdocinstru=u.tdoc and a.docinstru=u.documento) and "
     elif session['cargo'] == 3:
-        query += "exists (select 1 from usuario u, instructor i where i.tdocinstru= " 
-        query += str(session['tdoc']) +" and i.docinstru='" 
-        query += session['doc'] + "' and u.tdoc=i.tdoc and u.documento=i.documento"
+        query += "exists (select 1 from usuario u, instructor i where i.tdocinstru= "
+        query += str(session['tdoc']) + " and i.docinstru='"
+        query += session['doc'] + \
+            "' and u.tdoc=i.tdoc and u.documento=i.documento"
         query += " and a.tdocinstru=u.tdoc and a.docinstru=u.documento) and "
     query += "u.tdoc=ee.tdoc and u.documento=ee.doc and ee.idgim=g.id and a.tdocinstru=u.tdoc and a.docinstru=u.documento and a.idgim = g.id and a.categoria=c.id and "
     query += "not exists (select 1 from aludesa ad where ad.tdocalu=a.tdoc and ad.docalu=a.documento)) as alucate "
@@ -899,25 +938,14 @@ def filtroAlumno(
     else:
         query += "LEFT JOIN (select m.tdoc, m.doc, max(m.fecha) as fecha from matricula m, tipomatri tm WHERE tm.id=2 "
     query += "and m.tipo=tm.id group by m.tdoc, m.doc) AS enat on enat.tdoc=alucate.tdoc AND enat.doc=alucate.documento "
-    if fdFetra != "-" or fhFetra != "-":
-        query += "JOIN (select m.tdoc, m.doc, max(m.fecha) as fecha from matricula m, tipomatri tm WHERE tm.id=3 "
-        if fdFetra != "-" and fhFetra != "-":
-            query += "and m.fecha between '" + fdAATEE + "' and '" + fhAATEE + "' "
-        elif fdFetra != "-":
-            query += "and m.fecha >= '" + fdAATEE + "' "
-        else:
-            query += "and m.fecha <= '" + fhAATEE + "' "
-    else:
-        query += "LEFT JOIN (select m.tdoc, m.doc, max(m.fecha) as fecha from matricula m, tipomatri tm WHERE tm.id=3 "
-    query += "and m.tipo=tm.id group by m.tdoc, m.doc) AS fetra on fetra.tdoc=alucate.tdoc AND fetra.doc=alucate.documento "
     query += "order by alucate.apellido, alucate.nombre"
     alumno = conn.execute(query).fetchall()
     dicAlu = {
         'tdoc': [], 'doc': [], 'nom': [], 'ape': [], 'cate': [], 'fecha': [],
-        'fAATEE': [], 'fEnat': [], 'fFetra': [], 'lim': 0, 'insNom': [],
+        'fAATEE': [], 'fEnat': [], 'lim': 0, 'insNom': [],
         'insApe': [], 'gimNom': [], 'edad': []
     }
-    for tDocAlu, docAlu, nomAlu, apeAlu, edad, cateAlu, insNom, insApe, gimNom, feAlu, faAlu, fEnatAlu, fFetraAlu in alumno:
+    for tDocAlu, docAlu, nomAlu, apeAlu, edad, cateAlu, insNom, insApe, gimNom, feAlu, faAlu, fEnatAlu in alumno:
         dicAlu["tdoc"].append(tDocAlu)
         dicAlu["doc"].append(docAlu)
         dicAlu["nom"].append(nomAlu)
@@ -926,13 +954,13 @@ def filtroAlumno(
         dicAlu["fecha"].append(feAlu)
         dicAlu["fAATEE"].append(faAlu)
         dicAlu["fEnat"].append(fEnatAlu)
-        dicAlu["fFetra"].append(fFetraAlu)
         dicAlu["insNom"].append(insNom)
         dicAlu["insApe"].append(insApe)
         dicAlu["gimNom"].append(gimNom)
         dicAlu['edad'].append(edad)
         dicAlu['lim'] += 1
     return jsonify(dicAlu)
+
 
 @app.route("/vDesaAlu")
 def vDesaAlu():
@@ -958,17 +986,18 @@ def vDesaAlu():
         dicAlu['lim'] += 1
     return jsonify(dicAlu)
 
+
 @app.route("/filtroDesaAlu/<string:nom>/<string:ape>/<string:cate>")
 def filtroDesaAlu(nom, ape, cate):
     tiempoSesion()
     query = "select a.tdoc, a.documento, a.apellido, a.nombre, c.tipo, convert(varchar,d.fecha,3) "
     query += "from alumno a, categoria c, aludesa d where "
     if nom != "-":
-        query += "a.nombre like'%" + nom + "%' and " 
+        query += "a.nombre like'%" + nom + "%' and "
     if ape != "-":
-        query += "a.apellido like'%" + ape + "%' and " 
+        query += "a.apellido like'%" + ape + "%' and "
     if cate != "-":
-        query += "c.id=" + cate + " and " 
+        query += "c.id=" + cate + " and "
     query += "c.id=a.categoria and d.tdocalu=a.tdoc and a.documento=d.docalu"
     alumno = conn.execute(query).fetchall()
     dicAlu = {
@@ -1006,10 +1035,11 @@ def filtrarImagen(tipo):
 @app.route("/vTodoImagen")
 def vTodoImagen():
     tiempoSesion()
-    dicEven = {'id': [], 'direc': [], 'limExa': 0, 'limTor': 0, 'limVar': 0}
-    llenarDicImagen(dicEven, 'limExa', 1)
+    dicEven = {'id': [], 'direc': [], 'limExaCap': 0, 'limTor': 0, 'limVar': 0, 'limExaProb': 0}
+    llenarDicImagen(dicEven, 'limExaCap', 1)
     llenarDicImagen(dicEven, 'limTor', 2)
     llenarDicImagen(dicEven, 'limVar', 3)
+    llenarDicImagen(dicEven, 'limExaProb', 4)
     return jsonify(dicEven)
 
 
@@ -1024,19 +1054,50 @@ def llenarDicImagen(dicEven, lim, tipo):
         dicEven[lim] += 1
 
 # Detalles
+
+
 @app.route("/detalleUsuario/<int:tdoc>/<string:doc>")
 def detalleUsuario(tdoc, doc):
     tiempoSesion()
+    return render_template("/Detalles/DetalleUsuario.html", tdoc=tdoc, doc=doc)
+
+
+@app.route("/dUsuario/<int:tdoc>/<string:doc>")
+def dUsuario(tdoc, doc):
+    tiempoSesion()
     usuario = conn.execute(
-        "select u.nombre, u.apellido, c.tipo, ca.tipo, u.email, u.tdoc, u.documento "
-        "from usuario u, categoria c, cargo ca "
-        "where u.tdoc=" + str(tdoc) + " and u.documento=" + doc
-        + " and u.categoria=c.id and u.cargo=ca.id"
+        "select usu.nombre, usu.apellido, usu.categoria, usu.cargo, usu.email, td.tipo, usu.documento, "
+        "cabe.apellido, cabe.nombre, instru.apellido, instru.nombre "
+        "from tipodocumento td, ("
+            "select u.nombre, u.apellido, c.tipo as categoria, ca.tipo as cargo, u.email, u.tdoc, u.documento "
+            "from usuario u, categoria c, cargo ca "
+            "where u.tdoc=" + str(tdoc) + " and u.documento='" + doc
+            + "' and u.categoria=c.id and ca.id=u.cargo"
+        ") as usu "
+        "left join( "
+            "select u.apellido, u.nombre, " + str(tdoc) + " as tdoc, '" + doc
+            + "' as doc from usuario u, cabeza c " 
+            "where c.doccabeza=u.documento and c.tdoccabeza=u.tdoc "
+            "and c.doccabeza<>c.documento and c.tdoccabeza=c.tdoc "
+            "and c.tdoc=" + str(tdoc) + " and c.documento='" + doc + "' "
+        ") as cabe "
+        "on cabe.tdoc=usu.tdoc and cabe.doc=usu.documento "
+        "left join( "
+            "select u.apellido, u.nombre, " + str(tdoc) + " as tdoc, '" + doc
+            + "' as doc from usuario u, instructor i "
+            "where i.docinstru=u.documento and i.tdocinstru=u.tdoc "
+            "and i.docinstru<>i.documento and i.tdocinstru=i.tdoc "
+            "and i.tdoc=" + str(tdoc) + " and i.documento='" + doc + "' "
+        ") as instru "
+        "on instru.tdoc=usu.tdoc and instru.doc=usu.documento "
+        "WHERE td.id=usu.tdoc"
     ).fetchone()
     return jsonify({
-        'nomape': f'{usuario[0]} {usuario[1]}', 'cate': usuario[2], 'cargo': usuario[3],
-        'mail': usuario[4], 'tdoc': usuario[5], 'doc': usuario[6]
+        'nom': usuario[0], 'ape': usuario[1], 'cate': usuario[2], 'cargo': usuario[3],
+        'mail': usuario[4], 'tdoc': usuario[5], 'doc': usuario[6],
+        'cabeza': f'{usuario[7]} {usuario[8]}', 'instructor': f'{usuario[9]} {usuario[10]}'
     })
+
 
 @app.route("/gUsuario/<int:tdoc>/<string:doc>")
 def gUsuario(tdoc, doc):
@@ -1053,6 +1114,7 @@ def gUsuario(tdoc, doc):
         dicGim['lim'] += 1
     return jsonify(dicGim)
 
+
 @app.route("/verContra/<int:tdoc>/<string:doc>")
 def verContra(tdoc, doc):
     tiempoSesion()
@@ -1061,6 +1123,7 @@ def verContra(tdoc, doc):
         "where u.tdoc=" + str(tdoc) + " and u.documento=" + doc
     ).fetchone()
     return jsonify({'contra': usuario[0]})
+
 
 @app.route("/detalleGimnasio/<int:idGim>")
 def detalleGimnasio(idGim):
@@ -1094,7 +1157,7 @@ def vAluGimnasio(idGim):
     alumno = conn.execute(
         "select a.nombre, a.apellido, c.tipo"
         " from alumno a, categoria c where a.idgim=" + str(idGim)
-        + " and a.categoria=c.id" + query 
+        + " and a.categoria=c.id" + query
     ).fetchall()
     dicAlu = {'nom': [], 'ape': [], 'cate': [], 'lim': 0}
     for nom, ape, cate in alumno:
@@ -1109,13 +1172,24 @@ def vAluGimnasio(idGim):
 def detalleEvento(idEve):
     tiempoSesion()
     evento = conn.execute(
+        "select e.id, 1 from evento e "
+        "where e.id=" + str(idEve) 
+    ).fetchone()
+    return render_template(
+        "Detalles/DetalleEvento.html", idEve=evento[0]
+    )
+
+@app.route("/dEvento/<int:idEve>")
+def dEvento(idEve):
+    tiempoSesion()
+    evento = conn.execute(
         "select e.id, convert(varchar,e.fecha,3), e.descripcion, te.tipo "
         "from evento e, tipoevento te "
         "where e.id=" + str(idEve) + " and e.tipo=te.id"
     ).fetchone()
     return jsonify({
-        'id': evento[0], 'fecha': evento[1], 'desc': evento[2], 'tipo': evento[3],
-        'editar': True if session['cargo'] == 1 else False
+        'idEve': evento[0], 'fecha': evento[1], 'desc': evento[2], 'tipo': evento[3],
+        'cargo': True if session['cargo'] == 1 else False
     })
 
 
@@ -1126,13 +1200,15 @@ def vAluEvento(idEve):
     if session['cargo'] == 2:
         condiEx = " and exists (select 1 from cabeza c, usuario u where c.tdoccabeza="
         condiEx += str(session['tdoc']) + " and c.doccabeza='"
-        condiEx += session['doc'] + "' and c.tdoc=u.tdoc and c.documento=u.documento"
-        condiEx += " and a.tdocinstru=u.tdoc and a.docinstru=a.documento)"
+        condiEx += session['doc'] 
+        condiEx += "' and c.tdoc=u.tdoc and c.documento=u.documento"
+        condiEx += " and a.tdocinstru=u.tdoc and a.docinstru=u.documento)"
     elif session['cargo'] == 3:
         condiEx = " and exists (select 1 from instructor i, usuario u where i.tdocinstru="
         condiEx += str(session['tdoc']) + " and i.docinstru='"
-        condiEx += session['doc'] + "' and i.tdoc=u.tdoc and i.documento=u.documento"
-        condiEx += " and a.tdocinstru=u.tdoc and a.docinstru=a.documento)"
+        condiEx += session['doc']
+        condiEx += "' and i.tdoc=u.tdoc and i.documento=u.documento"
+        condiEx += " and a.tdocinstru=u.tdoc and a.docinstru=u.documento)"
     evento = conn.execute(
         "select a.nombre, a.apellido, c.tipo"
         " from alumno a, participa p, evento e, categoria c"
@@ -1140,6 +1216,7 @@ def vAluEvento(idEve):
         " and e.id=p.idevento and p.tdoc=a.tdoc and p.doc=a.documento and p.categoria=c.id"
         + condiEx + " order by a.apellido, a.nombre"
     ).fetchall()
+    app.logger.debug(evento)
     dicAluEve = {'nom': [], 'ape': [], 'cate': [], 'lim': 0, 'idEve': idEve}
     for nom, ape, cate in evento:
         dicAluEve['nom'].append(nom)
@@ -1151,6 +1228,15 @@ def vAluEvento(idEve):
 
 @app.route("/detalleAlumno/<int:tdoc>/<string:doc>")
 def detalleAlumno(tdoc, doc):
+    tiempoSesion()
+    alumno = conn.execute(
+        "select a.tdoc, a.documento from alumno a "
+        "where a.tdoc=" + str(tdoc) + " and a.documento='" + doc + "'"
+    ).fetchone()
+    return render_template("Detalles/DetalleAlumno.html", tdoc=alumno[0], doc=alumno[1])
+
+@app.route("/dAlumno/<int:tdoc>/<string:doc>")
+def dAlumno(tdoc, doc):
     tiempoSesion()
     alumno = conn.execute(
         "select a.nombre, a.apellido, c.tipo, a.nacionalidad, convert(varchar,a.fnac,3), "
@@ -1165,7 +1251,7 @@ def detalleAlumno(tdoc, doc):
         'nom': alumno[0], 'ape': alumno[1], 'cate': alumno[2], 'nacio': alumno[3],
         'fnac': alumno[4], 'finsc': alumno[5], 'obs': alumno[6], 'mail': alumno[7],
         'loc': alumno[8], 'foto': "static/" + alumno[9], 'nominstru': alumno[10],
-        'apeinstru': alumno[11], 'nomgim': alumno[12], 
+        'apeinstru': alumno[11], 'nomgim': alumno[12],
         'matri': True if session['cargo'] == 1 else False
     })
 
@@ -1206,6 +1292,8 @@ def vMatriAlu(tdoc, doc):
     return jsonify(dicMatri)
 
 # Editar
+
+
 @app.route("/eUsuario/<int:tdoc>/<string:doc>/<string:retorno>", methods={'GET', 'POST'})
 def eUsuario(tdoc, doc, retorno):
     tiempoSesion()
@@ -1229,16 +1317,24 @@ def eUsuario(tdoc, doc, retorno):
     if request.method == 'POST':
         usuario = conn.execute(
             "select usu.nombre, usu.apellido, usu.categoria, usu.cargo, usu.email, usu.tdoc, usu.documento, "
-            "isnull(convert(varchar,c.tdoccabeza),''), isnull(c.doccabeza,''), "
-            "isnull(convert(varchar,i.tdocinstru),''), isnull(i.docinstru,'') "
+            "isnull(convert(varchar,cabe.tdoccabeza),''), isnull(cabe.doccabeza,''), "
+            "isnull(convert(varchar,instru.tdocinstru),''), isnull(instru.docinstru,'') "
             "from (select u.nombre, u.apellido, u.categoria, u.cargo, u.email, u.tdoc, u.documento "
             "from usuario u "
             "where u.tdoc=" + str(tdoc) +
             " and u.documento=" + doc + " ) as usu "
-            "left join cabeza c "
-            "on c.tdoc=usu.tdoc and c.documento=usu.documento "
-            "left join instructor i "
-            "on i.tdoc=usu.tdoc and i.documento=usu.documento"
+            "left join ("
+            "select c.* from cabeza c "
+            "where c.tdoc=c.tdoccabeza and c.doccabeza<>c.documento "
+            "and c.documento='" + doc + "' and c.tdoc=" + str(tdoc) +
+            ") as cabe "
+            "on cabe.tdoc=usu.tdoc and cabe.documento=usu.documento "
+            "left join ("
+            "select i.* from instructor i "
+            "where i.tdoc=i.tdocinstru and i.docinstru<>i.documento "
+            "and i.documento='" + doc + "' and i.tdoc=" + str(tdoc) +
+            ") as instru "
+            "on instru.tdoc=usu.tdoc and instru.documento=usu.documento"
         ).fetchone()
         query = ""
         tdoc = str(tdoc)
@@ -1246,81 +1342,108 @@ def eUsuario(tdoc, doc, retorno):
             query += " nombre='" + nom + "',"
         if usuario[1] != (ape := request.form.get("Apellido").capitalize()):
             query += " apellido='" + ape + "',"
-        if usuario[2] != (cate := request.form.get("Categoria")):
+        if usuario[2] != (cate := int(request.form.get("Categoria"))):
             query += " categoria=" + cate + ","
         if usuario[4] != (mail := request.form.get("Email")):
             query += " email='" + mail + "',"
-        if usuario[3] != (cargo := request.form.get("Cargo")):
+        if f'{usuario[7]},{usuario[8]}' != request.form.get("Cabeza"):
+            dato = request.form.get("Cabeza").split(",")
+            upTabla(
+                "cabeza", "tdoccabeza=" + dato[0] + ", doccabeza=" + dato[1],
+                "tdoc=" + str(usuario[5]) + " and documento='" + usuario[6]
+                + "' and tdoccabeza=tdoc and doccabeza<>documento"
+            )
+        if f'{usuario[9]},{usuario[10]}' != request.form.get("Instructor"):
+            dato = request.form.get("Instructor").split(",")
+            upTabla(
+                "instructor", "tdocinstru=" +
+                dato[0] + ", docinstru=" + dato[1],
+                "tdoc=" + str(usuario[5]) + " and documento='" + usuario[6]
+                + "' and tdoc=tdocinstru and docinstru<>documento"
+            )
+        if usuario[3] != (cargo := int(request.form.get("Cargo"))):
             query += " cargo=" + cargo + ","
             if cargo == 1:
                 delTabla(
-                    "cabeza", "tdoccabeza="+ tdoc + " and doccabeza='" + doc + "'"
-                    )
+                    "cabeza", "tdoccabeza=" + tdoc + " and doccabeza='" + doc + "'"
+                )
                 delTabla(
-                    "instructor", "tdocinstru="+ tdoc + " and docinstru='" + doc + "'"
-                    )
+                    "instructor", "tdocinstru=" + tdoc + " and docinstru='" + doc + "'"
+                )
             elif cargo == 2:
                 insTabla(
-                    "cabeza","tdoccabeza,doccabeza,tdoc,documento",
+                    "cabeza", "tdoccabeza,doccabeza,tdoc,documento",
                     tdoc + ",'" + doc + "'," + tdoc + ",'" + doc + "'"
                 )
                 if usuario[3] == 1:
                     insTabla(
-                        "instructor","tdocinstru,docinstru,tdoc,documento",
+                        "instructor", "tdocinstru,docinstru,tdoc,documento",
                         tdoc + ",'" + doc + "'," + tdoc + ",'" + doc + "'"
                     )
             else:
                 delTabla(
-                    "cabeza", "tdoccabeza="+ tdoc + " and doccabeza='" + doc + "'"
-                    )
+                    "cabeza", "tdoccabeza=" + tdoc + " and doccabeza='" + doc + "'"
+                )
                 if usuario[3] == 1:
                     insTabla(
-                        "instructor","tdocinstru,docinstru,tdoc,documento",
+                        "instructor", "tdocinstru,docinstru,tdoc,documento",
                         tdoc + ",'" + doc + "'," + tdoc + ",'" + doc + "'"
-                        )
-        if usuario[5] != (
-            nTdoc := request.form.get("TipoDocumento")
-            ) or usuario[6] != (
-                nDoc := request.form.get("Documento")
-                ):
+                    )
+        if usuario[5] != int(request.form.get("TipoDocumento")
+                             ) or usuario[6] != request.form.get("Documento"):
+            nTdoc = request.form.get("TipoDocumento")
+            nDoc = request.form.get("Documento")
             if usuario[5] != nTdoc and usuario[6] != nDoc:
                 query += " tdoc=" + nTdoc + " and documento='" + nDoc + "',"
                 upInstruCabe(
                     "tdoc=" + nTdoc + " and documento='" + nDoc + "'",
-                    "tdoc=" + usuario[5] + " and documento='" + usuario[6] + "'",
+                    "tdoc=" + str(usuario[5]) +
+                    " and documento='" + usuario[6] + "'",
                     "tdoccabeza=" + nTdoc + " and doccabeza='" + nDoc + "'",
-                    "tdoccabeza=" + usuario[5] + " and doccabeza='" + usuario[6] + "'",
+                    "tdoccabeza=" +
+                    str(usuario[5]) + " and doccabeza='" + usuario[6] + "'",
                     "tdoc=" + nTdoc + " and documento='" + nDoc + "'",
-                    "tdoc=" + usuario[5] + " and documento='" + usuario[6] + "'",
+                    "tdoc=" + str(usuario[5]) +
+                    " and documento='" + usuario[6] + "'",
                     "tdocinstru=" + nTdoc + " and docinstru='" + nDoc + "'",
-                    "tdocinstru=" + usuario[5] + " and docinstru='" + usuario[6] + "'"
+                    "tdocinstru=" +
+                    str(usuario[5]) + " and docinstru='" + usuario[6] + "'"
                 )
             elif usuario[5] != nTdoc:
-                query += " tdoc=" + nTdoc + "',"
+                query += " tdoc=" + nTdoc + ","
                 upInstruCabe(
                     "tdoc=" + nTdoc,
-                    "tdoc=" + usuario[5] + " and documento='" + usuario[6] + "'",
+                    "tdoc=" + str(usuario[5]) +
+                    " and documento='" + usuario[6] + "'",
                     "tdoccabeza=" + nTdoc,
-                    "tdoccabeza=" + usuario[5] + " and doccabeza='" + usuario[6] + "'",
+                    "tdoccabeza=" +
+                    str(usuario[5]) + " and doccabeza='" + usuario[6] + "'",
                     "tdoc=" + nTdoc,
-                    "tdoc=" + usuario[5] + " and documento='" + usuario[6] + "'",
+                    "tdoc=" + str(usuario[5]) +
+                    " and documento='" + usuario[6] + "'",
                     "tdocinstru=" + nTdoc,
-                    "tdocinstru=" + usuario[5] + " and docinstru='" + usuario[6] + "'"
+                    "tdocinstru=" +
+                    str(usuario[5]) + " and docinstru='" + usuario[6] + "'"
                 )
             elif usuario[6] != nDoc:
                 query += " documento='" + nDoc + "',"
                 upInstruCabe(
                     "documento='" + nDoc + "'",
-                    "tdoc=" + usuario[5] + "documento='" + usuario[6] + "'",
+                    "tdoc=" + str(usuario[5]) +
+                    "documento='" + usuario[6] + "'",
                     "doccabeza='" + nDoc + "'",
-                    "tdoccabeza=" + usuario[5] + " and doccabeza='" + usuario[6] + "'",
+                    "tdoccabeza=" +
+                    str(usuario[5]) + " and doccabeza='" + usuario[6] + "'",
                     "documento='" + nDoc + "'",
-                    "tdoc=" + usuario[5] + " and documento='" + usuario[6] + "'",
+                    "tdoc=" + str(usuario[5]) +
+                    " and documento='" + usuario[6] + "'",
                     "docinstru='" + nDoc + "'",
-                    "tdocinstru=" + usuario[5] + " and docinstru='" + usuario[6] + "'"
+                    "tdocinstru=" +
+                    str(usuario[5]) + " and docinstru='" + usuario[6] + "'"
                 )
         if query:
-            upTabla("usuario", query[:-1] ,"tdoc=" + str(tdoc) + " and documento='" + doc + "'")
+            upTabla("usuario", query[:-1], "tdoc=" +
+                    str(tdoc) + " and documento='" + doc + "'")
         conn.commit()
         return redirect("/MainBase")
     return render_template(
@@ -1328,26 +1451,36 @@ def eUsuario(tdoc, doc, retorno):
         tDoc=tDoc, instructor=instructor, cabeza=cabeza, tdoc=tdoc, doc=doc, retorno=retorno
     )
 
-def upInstruCabe(valN1,condi1,valN2,condi2,valN3,condi3,valN4,condi4):
-    upTabla("cabeza",valN1,condi1) 
-    upTabla("cabeza",valN2,condi2) 
-    upTabla("instructor",valN3,condi3) 
-    upTabla("instructor",valN4,condi4) 
+
+def upInstruCabe(valN1, condi1, valN2, condi2, valN3, condi3, valN4, condi4):
+    upTabla("cabeza", valN1, condi1)
+    upTabla("cabeza", valN2, condi2)
+    upTabla("instructor", valN3, condi3)
+    upTabla("instructor", valN4, condi4)
+
 
 @app.route("/cargarUsuario/<int:tdoc>/<string:doc>")
 def cargarUsuario(tdoc, doc):
     tiempoSesion()
     usuario = conn.execute(
         "select usu.nombre, usu.apellido, usu.categoria, usu.cargo, usu.email, usu.tdoc, usu.documento, "
-        "isnull(convert(varchar,c.tdoccabeza),''), isnull(c.doccabeza,''), "
-        "isnull(convert(varchar,i.tdocinstru),''), isnull(i.docinstru,'') "
+        "isnull(convert(varchar,cabe.tdoccabeza),''), isnull(cabe.doccabeza,''), "
+        "isnull(convert(varchar,instru.tdocinstru),''), isnull(instru.docinstru,'') "
         "from (select u.nombre, u.apellido, u.categoria, u.cargo, u.email, u.tdoc, u.documento "
         "from usuario u "
         "where u.tdoc=" + str(tdoc) + " and u.documento=" + doc + " ) as usu "
-        "left join cabeza c "
-        "on c.tdoc=usu.tdoc and c.documento=usu.documento "
-        "left join instructor i "
-        "on i.tdoc=usu.tdoc and i.documento=usu.documento"
+        "left join ("
+        "select c.* from cabeza c "
+        "where c.tdoc=c.tdoccabeza and c.doccabeza<>c.documento "
+        "and c.documento='" + doc + "' and c.tdoc=" + str(tdoc) +
+        ") as cabe "
+        "on cabe.tdoc=usu.tdoc and cabe.documento=usu.documento "
+        "left join ("
+        "select i.* from instructor i "
+        "where i.tdoc=i.tdocinstru and i.docinstru<>i.documento "
+        "and i.documento='" + doc + "' and i.tdoc=" + str(tdoc) +
+        ") as instru "
+        "on instru.tdoc=usu.tdoc and instru.documento=usu.documento"
     ).fetchone()
     return jsonify({
         'nom': usuario[0], 'ape': usuario[1], 'cate': usuario[2],
@@ -1355,6 +1488,7 @@ def cargarUsuario(tdoc, doc):
         'doc': usuario[6], 'cabeza': f'{usuario[7]},{usuario[8]}',
         'instructor': f'{usuario[9]},{usuario[10]}'
     })
+
 
 @app.route("/eGimnasio/<int:idGim>", methods={'GET', 'POST'})
 def eGimnasio(idGim):
@@ -1400,7 +1534,8 @@ def eGimnasio(idGim):
         query = ""
         for dato in instru:
             dato = dato.split(",")
-            query += "(u.tdoc=" + dato[0] + " and u.documento='" + dato[1] + "') or "
+            query += "(u.tdoc=" + dato[0] + \
+                " and u.documento='" + dato[1] + "') or "
             if not conn.execute(
                 "select 1 from enseñaen ee "
                 "where ee.tdoc=" + dato[0] + " and ee.doc='" + dato[1]
@@ -1409,31 +1544,33 @@ def eGimnasio(idGim):
                 insTabla(
                     "enseñaen", "tdoc,doc,idgim",
                     dato[0] + ",'" + dato[1] + "'," + str(idGim)
-                    )
+                )
         aludesa = conn.execute(
             "SELECT a.tdoc, a.documento from alumno a "
             "where not exists(select 1 from usuario u where (" + query[:-4]
-            + ") and u.tdoc=a.tdocinstru and u.documento=a.docinstru) and a.idgim=" + str(idGim)
+            + ") and u.tdoc=a.tdocinstru and u.documento=a.docinstru) and a.idgim=" +
+            str(idGim)
         ).fetchall()
         for tdocAlu, docAlu in aludesa:
             upTabla(
-                "alumno","tdocinstru=null, docinstru=null, idgim=null",
+                "alumno", "tdocinstru=null, docinstru=null, idgim=null",
                 "tdoc=" + str(tdocAlu) + " and documento='" + docAlu + "'"
             )
-            insTabla("aludesa","tdocalu,docalu,fecha", str(tdocAlu) + ",'" + docAlu + "',getdate()")
+            insTabla("aludesa", "tdocalu,docalu,fecha", str(
+                tdocAlu) + ",'" + docAlu + "',getdate()")
         conn.commit()
-        delTabla("horario","idgim=" + str(idGim))
+        delTabla("horario", "idgim=" + str(idGim))
         for edadIni, edadFin, horaIni, horaFin, usu, dia in zip(
             request.form.getlist("edadIni"), request.form.getlist("edadFin"),
             request.form.getlist("horaIni"), request.form.getlist("horaFin"),
             request.form.getlist("Hora"), request.form.getlist("diaClase")
         ):
             if int(edadIni) < int(edadFin) and horaIni < horaFin and not conn.execute(
-                        "select 1 from horario h "
-                        "where h.tdoc=" + usu[0] + " and h.doc='" + usu[1] +
-                        "' and h.idgim=" + str(idGim) + " and h.edadini=" + edadIni +
-                        " and h.dia=" + dia
-                    ).fetchone():
+                "select 1 from horario h "
+                "where h.tdoc=" + usu[0] + " and h.doc='" + usu[1] +
+                "' and h.idgim=" + str(idGim) + " and h.edadini=" + edadIni +
+                " and h.dia=" + dia
+            ).fetchone():
                 usu = usu.split(",")
                 insTabla(
                     "horario", "tdoc,doc,idgim,edadini,edadfin,horaini,horafin,dia",
@@ -1443,28 +1580,30 @@ def eGimnasio(idGim):
         conn.commit()
         conn.execute(
             "delete horario where not exists(select 1 from usuario u where ("
-            + query[:-4] + ") and u.tdoc=horario.tdoc and u.documento=horario.doc and horario.idgim=" + str(idGim) + ")"
+            + query[:-4] + ") and u.tdoc=horario.tdoc and u.documento=horario.doc and horario.idgim=" +
+            str(idGim) + ")"
         )
         conn.commit()
         return redirect("/vGimnasio")
     return render_template("/Editar/EditarGimnasio.html", idGim=idGim)
 
+
 @app.route("/cargarGimnasio/<int:idGim>")
 def cargarGimnasio(idGim):
     tiempoSesion()
     conaux = pyodbc.connect(
-    'Driver={ODBC Driver 17 for SQL Server};Server=DESKTOP-TFA1LI9\SQLEXPRESS;Database=BaseEnat;UID=Leo;PWD=12345'
-        ).cursor()
+        'Driver={ODBC Driver 17 for SQL Server};Server=DESKTOP-TFA1LI9\SQLEXPRESS;Database=BaseEnat;UID=Leo;PWD=12345'
+    ).cursor()
     usuario = conaux.execute(
         "select u.tdoc, u.documento "
         "from usuario u, enseñaen en, categoria c "
         "where en.idgim=" + str(idGim) +
-        " and en.tdoc=u.tdoc and en.doc=u.documento and u.categoria=c.id" 
+        " and en.tdoc=u.tdoc and en.doc=u.documento and u.categoria=c.id"
     ).fetchall()
     condiEx = ""
     if session['cargo'] == 2:
         condiEx += " and exists(select 1 from cabeza ca where ca.tdoccabeza="
-        condiEx += str(session['tdoc']) 
+        condiEx += str(session['tdoc'])
         condiEx += " and ca.doccabeza='" + session['doc']
         condiEx += "' and ca.tdoc=u.tdoc and ca.documento=u.documento)"
     usuGen = conn.execute(
@@ -1473,7 +1612,7 @@ def cargarGimnasio(idGim):
         " where u.cargo <> 1 and u.categoria=c.id" + condiEx
     ).fetchall()
     if session['cargo'] != 1:
-        usuGen.insert(0,conn.execute(
+        usuGen.insert(0, conn.execute(
             "select u.tdoc, u.documento, u.apellido, u.nombre, c.tipo"
             " from usuario u, categoria c"
             " where u.tdoc=" + str(session['tdoc']) + " and u.documento='"
@@ -1519,6 +1658,7 @@ def cargarGimnasio(idGim):
         dicGim['limHora'] += 1
     return jsonify(dicGim)
 
+
 @app.route("/aHoraGim/<int:idGim>")
 def aHoraGim(idGim):
     tiempoSesion()
@@ -1534,6 +1674,7 @@ def aHoraGim(idGim):
         dicHora['text'].append(f'{ape} {nom} {cate}')
         dicHora['lim'] += 1
     return jsonify(dicHora)
+
 
 @app.route("/eEvento/<int:idEve>", methods={'GET', 'POST'})
 def eEvento(idEve):
@@ -1553,10 +1694,11 @@ def eEvento(idEve):
         if evento[2] != (desc := request.form.get("Descripcion")):
             query += " Descripcion='" + desc + "',"
         if query:
-            upTabla("evento",query[:-1],"id=" + str(idEve))
+            upTabla("evento", query[:-1], "id=" + str(idEve))
             conn.commit()
         return redirect("/MainBase")
-    return render_template("/Editar/EditarEvento.html", tipoEvento=tipo, idEve = idEve)
+    return render_template("/Editar/EditarEvento.html", tipoEvento=tipo, idEve=idEve)
+
 
 @app.route("/cargarEvento/<int:idEve>")
 def cargarEvento(idEve):
@@ -1570,13 +1712,14 @@ def cargarEvento(idEve):
         'fecha': evento[0], 'tipo': evento[1], 'desc': evento[2]
     })
 
+
 @app.route("/eAlumno/<int:tdoc>/<string:doc>", methods={'GET', 'POST'})
-def eAlumno(tdoc,doc):
+def eAlumno(tdoc, doc):
     tiempoSesion()
     categoria = conn.execute("select * from categoria").fetchall()
     tDoc = conn.execute("select * from tipodocumento").fetchall()
     condiEx = ""
-    if session['cargo'] == 2: 
+    if session['cargo'] == 2:
         condiEx = " and exists(select 1 from cabeza ca where ca.doccabeza='"
         condiEx += session['doc']
         condiEx += "' and ca.tdoccabeza=" + str(session['tdoc'])
@@ -1588,7 +1731,7 @@ def eAlumno(tdoc,doc):
         query + " group by u.tdoc,u.documento,u.apellido,u.nombre,c.tipo "
     ).fetchall()
     if session['cargo'] != 1:
-        usuario.insert(0,conn.execute(
+        usuario.insert(0, conn.execute(
             "select u.tdoc, u.documento, u.apellido, u.nombre, c.tipo"
             " from usuario u, categoria c"
             " where u.tdoc=" + str(session['tdoc']) + " and u.documento='"
@@ -1628,7 +1771,7 @@ def eAlumno(tdoc,doc):
                             + alumno[3] + "' and pe.idevento=e.id "
                             "order by e.fecha desc"
                         ).fetchall()
-                    ),str(alumno[2]),alumno[3],cate
+                    ), str(alumno[2]), alumno[3], cate
                 )
         if alumno[5] != (nac := request.form.get("Nacionalidad")):
             query += " nacionalidad='" + nac + "',"
@@ -1656,7 +1799,7 @@ def eAlumno(tdoc,doc):
                     "select u.apellido, u.nombre "
                     "from usuario u where u.tdoc=" + str(instru[0])
                     + " and u.documento='" + instru[1] + "'"
-                    ).fetchone()
+                ).fetchone()
                 if alumno[13] != instru[0]:
                     query += " tdocinstru=" + str(instru[0]) + ","
                 if alumno[14] != instru[1]:
@@ -1666,7 +1809,7 @@ def eAlumno(tdoc,doc):
                     "select u.apellido, u.nombre "
                     "from usuario u where u.tdoc=" + str(alumno[13])
                     + " and u.documento='" + alumno[14] + "'"
-                    ).fetchone()
+                ).fetchone()
             if idGim:
                 if alumno[15] != idGim:
                     query += " idgim=" + idGim + ","
@@ -1679,25 +1822,29 @@ def eAlumno(tdoc,doc):
                     "select g.nombre "
                     "from gimnasio g where g.id=" + str(alumno[15])
                 ).fetchone()[0]
-            nombre = 'SinFoto.jpg'
+            nombre = 'sin_foto.png'
             if request.files["Foto"]:
-                if alumno[12] != "Imagenes/SinFoto.jpg":
+                if alumno[12] != "Imagenes/sin_foto.png":
                     os.remove("Static/" + alumno[12])
                 nombre = photos.save(
                     request.files["Foto"], f'{nomGim.replace(" ","")}/{usu[0]}{usu[1]}'
                 )
-                query += " foto='Imagenes" + url_for('obtener_nombre', filename=nombre)[8:] + "',"
+                query += " foto='Imagenes" + \
+                    url_for('obtener_nombre', filename=nombre)[8:] + "',"
         if query:
-            upTabla("alumno",query[:-1],"tdoc=" + str(tdoc) + " and documento='" + doc + "'")
+            upTabla("alumno", query[:-1], "tdoc=" +
+                    str(tdoc) + " and documento='" + doc + "'")
             conn.commit()
         tele = request.form.getlist("Telefono")
         conta = request.form.getlist("Contacto")
-        delTabla("telefono","tdoc=" + str(tdoc) + " and documento='" + doc + "'")
-        for tel, cont in zip(tele,conta):
+        delTabla("telefono", "tdoc=" + str(tdoc) +
+                 " and documento='" + doc + "'")
+        for tel, cont in zip(tele, conta):
             if tel and cont:
                 insTabla(
-                    "telefono","tdoc,documento,telefono,contacto",
-                    "" + str(tdoc) + ",'" + doc + "','" + tel + "','" + cont + "'"
+                    "telefono", "tdoc,documento,telefono,contacto",
+                    "" + str(tdoc) + ",'" + doc + "','" +
+                    tel + "','" + cont + "'"
                 )
         conn.commit()
         return redirect("/vAlumno")
@@ -1705,6 +1852,7 @@ def eAlumno(tdoc,doc):
         "/Editar/EditarAlumno.html", categoria=categoria, tDoc=tDoc,
         usuario=usuario, doc=doc, tdoc=tdoc
     )
+
 
 @app.route("/cargarAlumno/<int:tdoc>/<string:doc>")
 def cargarAlumno(tdoc, doc):
@@ -1737,52 +1885,74 @@ def cargarAlumno(tdoc, doc):
 
 # Funciones boton
 
+
 @app.route("/elimUsuario/<int:tdoc>/<string:doc>")
 def elimUsuario(tdoc, doc):
     tiempoSesion()
-    delTabla("cabeza","tdoc=" + str(tdoc) + " and documento='" + doc + "'")
-    delTabla("instructor","tdoc=" + str(tdoc) + " and documento='" + doc + "'")
+    delTabla("cabeza", "tdoc=" + str(tdoc) + " and documento='" + doc + "'")
+    delTabla("instructor", "tdoc=" + str(tdoc) +
+             " and documento='" + doc + "'")
+    delTabla("notifica", "tdoc=" + str(tdoc) + " and documento='" + doc + "'")
+    notis = conn.execute(
+        "select n.id, 1 from notificacion n"
+    ).fetchall()
+    for idNoti, _ in notis:
+        if not conn.execute(
+            "select 1 from notifica n where n.idnoti='" + str(idNoti) + "'"
+        ).fetchone():
+            delTabla("notificacion", "id='" + str(idNoti) + "'")
+    delTabla("enseñaen", "tdoc=" + str(tdoc) + " and doc='" + doc + "'")
+    delTabla("horario", "tdoc=" + str(tdoc) + " and doc='" + doc + "'")
+    upTabla(
+        "alumno", "tdocinstru=NULL, docinstru=NULL, idgim=NULL",
+        "tdocinstru=" + str(tdoc) + " and docinstru='" + doc + "'"
+    )
+    delTabla("usuario", "tdoc=" + str(tdoc) + " and documento='" + doc + "'")
     conn.commit()
     return redirect("/vUsuario")
+
 
 @app.route("/desaGim/<int:idGim>")
 def desaGim(idGim):
     tiempoSesion()
     alu = []
     if session['cargo'] != 3:
-        delTabla("enseñaen","idgim=" + str(idGim))
-        delTabla("horario","idgim=" + str(idGim))
+        delTabla("enseñaen", "idgim=" + str(idGim))
+        delTabla("horario", "idgim=" + str(idGim))
         alu = conn.execute(
             "select a.tdoc, a.documento from alumno a "
             "where a.idgim=" + str(idGim)
         ).fetchall()
         upTabla(
-            "alumno","idgim=null, tdocinstru=null, docinstru= null",
+            "alumno", "idgim=null, tdocinstru=null, docinstru= null",
             "idgim=" + str(idGim)
-            )
+        )
     else:
         delTabla(
-            "enseñaen","idgim=" + str(idGim) + " and tdoc="
+            "enseñaen", "idgim=" + str(idGim) + " and tdoc="
             + str(session['tdoc']) + " and doc='" + session['doc'] + "'"
-            )
+        )
         delTabla(
-            "horario","idgim=" + str(idGim) + " and tdoc=" 
+            "horario", "idgim=" + str(idGim) + " and tdoc="
             + str(session['tdoc']) + " and doc='" + session['doc'] + "'"
-            )
+        )
         alu = conn.execute(
             "select a.tdoc, t.documento from alumno a "
-            "where a.idgim=" + str(idGim) + " and a.tdocinstru=" + str(session['tdoc'])
+            "where a.idgim=" + str(idGim) +
+            " and a.tdocinstru=" + str(session['tdoc'])
             + " and a.docinstru='" + session['doc'] + "'"
         ).fetchall()
         upTabla(
-            "alumno","idgim=null, tdocinstru=null, docinstru= null",
+            "alumno", "idgim=null, tdocinstru=null, docinstru= null",
             "idgim=" + str(idGim) + " and tdocinstru=" + str(session['tdoc'])
             + " and docinstru='" + session['doc'] + "'"
-                )
+        )
     for tdoc, doc in alu:
-        insTabla("aludesa","tdocalu,docalu,fecha", str(tdoc) + ",'" + doc + "',getdate()")
+        insTabla("aludesa", "tdocalu,docalu,fecha",
+                 str(tdoc) + ",'" + doc + "',getdate()")
     conn.commit()
     return redirect("/vGimnasio")
+
 
 @app.route("/elimGimnasio/<int:idGim>")
 def elimGimnasio(idGim):
@@ -1792,9 +1962,10 @@ def elimGimnasio(idGim):
     ).fetchone()[0]
     os.remove("Static/" + logo)
     shutil.rmtree("Static/" + logo[:logo.rfind("/")])
-    delTabla("gimnasio","id=" + str(idGim))
+    delTabla("gimnasio", "id=" + str(idGim))
     conn.commit()
     return redirect("/vGimnasio")
+
 
 @app.route("/aAluEven/<int:tipo>/<string:cadAlu>")
 def aAluEven(tipo, cadAlu):
@@ -1803,8 +1974,9 @@ def aAluEven(tipo, cadAlu):
     idEve = conn.execute(
         "select e.id "
         "from evento e, ("
-            "select min(e.fecha) as minFecha "
-            "from evento e where e.tipo=" + str(tipo) + " and e.fecha >= getdate()"
+        "select min(e.fecha) as minFecha "
+        "from evento e where e.tipo=" +
+        str(tipo) + " and e.fecha >= getdate()"
         ") as ef "
         "where e.fecha = ef.minFecha and e.tipo=" + str(tipo)
     ).fetchone()[0]
@@ -1812,7 +1984,8 @@ def aAluEven(tipo, cadAlu):
         elem = elem.split(",")
         if not conn.execute(
             "select 1 from participa p "
-            "where p.tdoc=" + elem[0] + " and p.doc='" + elem[1] + "' and p.idevento=" + str(idEve)
+            "where p.tdoc=" + elem[0] + " and p.doc='" +
+                elem[1] + "' and p.idevento=" + str(idEve)
         ).fetchone():
             cate = conn.execute(
                 "select a.categoria from alumno a where a.tdoc="
@@ -1821,15 +1994,16 @@ def aAluEven(tipo, cadAlu):
             if tipo == 1:
                 cate = cate + 1
                 upTabla(
-                    "alumno","categoria=" + str(cate),
+                    "alumno", "categoria=" + str(cate),
                     "tdoc=" + elem[0] + " and documento='" + elem[1] + "'"
                 )
             insTabla(
-                "participa","tdoc,doc,idevento,categoria",
+                "participa", "tdoc,doc,idevento,categoria",
                 elem[0] + ",'" + elem[1] + "'," + str(idEve) + "," + str(cate)
             )
     conn.commit()
     return redirect("/vAlumno")
+
 
 @app.route("/desaAlu/<string:cadAlu>")
 def desaAlu(cadAlu):
@@ -1838,12 +2012,14 @@ def desaAlu(cadAlu):
     for elem in cadAlu:
         elem = elem.split(",")
         upTabla(
-            "alumno","tdocinstru=null, docinstru=null, idgim=null",
+            "alumno", "tdocinstru=null, docinstru=null, idgim=null",
             "tdoc=" + elem[0] + " and documento='" + elem[1] + "'"
         )
-        insTabla("aludesa","tdocalu,docalu,fecha",elem[0] + ",'" + elem[1] + "',getdate()")
+        insTabla("aludesa", "tdocalu,docalu,fecha",
+                 elem[0] + ",'" + elem[1] + "',getdate()")
     conn.commit()
     return redirect("/vAlumno")
+
 
 @app.route("/habiAlu/<string:tdocUsu>/<string:docUsu>/<string:idGim>/<string:cadAlu>")
 def habiAlu(tdocUsu, docUsu, idGim, cadAlu):
@@ -1852,12 +2028,14 @@ def habiAlu(tdocUsu, docUsu, idGim, cadAlu):
     for elem in cadAlu:
         elem = elem.split(",")
         upTabla(
-            "alumno","tdocinstru=" + tdocUsu + ", docinstru='" + docUsu + "', idgim=" + idGim,
+            "alumno", "tdocinstru=" + tdocUsu + ", docinstru='" + docUsu + "', idgim=" + idGim,
             "tdoc=" + elem[0] + " and documento='" + elem[1] + "'"
         )
-        delTabla("aludesa","tdocalu=" + elem[0] + " and docalu='" + elem[1] + "'")
+        delTabla("aludesa", "tdocalu=" +
+                 elem[0] + " and docalu='" + elem[1] + "'")
     conn.commit()
     return redirect("/vAlumno")
+
 
 @app.route("/aluMatri/<int:tipo>/<string:cadAlu>")
 def aluMatri(tipo, cadAlu):
@@ -1872,14 +2050,16 @@ def aluMatri(tipo, cadAlu):
             "m.tipo=" + tipo + " and m.fecha = convert(varchar,getdate(),3)"
         ).fetchone():
             insTabla(
-                "matricula","tdoc,doc,fecha,tipo",
-                elem[0] + ",'" + elem[1] + "',convert(varchar,getdate(),3)," + tipo
+                "matricula", "tdoc,doc,fecha,tipo",
+                elem[0] + ",'" + elem[1] +
+                "',convert(varchar,getdate(),3)," + tipo
             )
     conn.commit()
     return redirect("/vAlumno")
 
+
 @app.route("/vFilEveAlu/<string:tipo>/<string:tdoc>/<string:doc>")
-def vFilEveAlu(tipo,tdoc,doc):
+def vFilEveAlu(tipo, tdoc, doc):
     tiempoSesion()
     aluEve = conn.execute(
         "select convert(varchar,e.fecha,3), te.tipo, c.tipo "
@@ -1896,6 +2076,7 @@ def vFilEveAlu(tipo,tdoc,doc):
         dicEve['lim'] += 1
     return jsonify(dicEve)
 
+
 @app.route("/aPrevEve/<string:tipo>/<string:tdoc>/<string:doc>")
 def aPrevEve(tipo, tdoc, doc):
     tiempoSesion()
@@ -1903,8 +2084,8 @@ def aPrevEve(tipo, tdoc, doc):
         "select e.id, convert(varchar,e.fecha,3) "
         "from evento e "
         "where e.tipo= " + tipo + " and e.fecha <= getdate() and not exists("
-            "select 1 from participa p "
-            "where p.tdoc=" + tdoc + " and p.doc=" + doc + " and p.idevento=e.id "
+        "select 1 from participa p "
+        "where p.tdoc=" + tdoc + " and p.doc=" + doc + " and p.idevento=e.id "
         ") order by e.fecha"
     ).fetchall()
     dicEve = {'id': [], 'fecha': [], 'lim': 0}
@@ -1914,6 +2095,7 @@ def aPrevEve(tipo, tdoc, doc):
         dicEve['lim'] += 1
     return jsonify(dicEve)
 
+
 @app.route("/agregaEvento/<string:tdoc>/<string:doc>/<string:cadEve>")
 def agregaEvento(tdoc, doc, cadEve):
     tiempoSesion()
@@ -1921,24 +2103,25 @@ def agregaEvento(tdoc, doc, cadEve):
         "select e.id, e.tipo, convert(varchar,e.fecha,3) "
         "from evento e "
         "where e.id in (" + cadEve + ") or exists ("
-            "select 1 from participa p "
-            "where p.tdoc=" + tdoc + " and p.doc='" + doc + "' and p.idevento=e.id"
-        ") order by e.fecha desc" 
+        "select 1 from participa p "
+        "where p.tdoc=" + tdoc + " and p.doc='" + doc + "' and p.idevento=e.id"
+        ") order by e.fecha desc"
     ).fetchall()
     cate = conn.execute(
         "select a.categoria + ("
-            "select count(*) from evento e "
-            "where e.id in(" + cadEve + ") and e.tipo=1"
+        "select count(*) from evento e "
+        "where e.id in(" + cadEve + ") and e.tipo=1"
         ") "
         "from alumno a "
-        "where a.tdoc=" + tdoc + " and a.documento='" + doc + "'"  
+        "where a.tdoc=" + tdoc + " and a.documento='" + doc + "'"
     ).fetchone()[0]
-    reParti(iter(eveReg),tdoc,doc,cate)
+    reParti(iter(eveReg), tdoc, doc, cate)
     conn.commit()
     return redirect("/vAlumno")
 
+
 @app.route("/ePrevEven/<string:tipo>/<string:tdoc>/<string:doc>")
-def ePrevEven(tipo,tdoc,doc):
+def ePrevEven(tipo, tdoc, doc):
     tiempoSesion()
     even = conn.execute(
         "select e.id, convert(varchar,e.fecha,3) "
@@ -1953,73 +2136,80 @@ def ePrevEven(tipo,tdoc,doc):
         dicEve['lim'] += 1
     return jsonify(dicEve)
 
+
 @app.route("/elimEvento/<string:tdoc>/<string:doc>/<string:cadEve>")
-def elimEvento(tdoc,doc,cadEve):
+def elimEvento(tdoc, doc, cadEve):
     tiempoSesion()
     eveReg = conn.execute(
         "select e.id, e.tipo "
         "from evento e "
         "where e.id not in (" + cadEve + ") and exists ("
-            "select 1 from participa p "
-            "where p.tdoc=" + tdoc + " and p.doc='" + doc + "' and p.idevento=e.id"
-        ") order by e.fecha desc" 
+        "select 1 from participa p "
+        "where p.tdoc=" + tdoc + " and p.doc='" + doc + "' and p.idevento=e.id"
+        ") order by e.fecha desc"
     ).fetchall()
     cate = conn.execute(
         "select a.categoria - ("
-            "select count(*) from evento e "
-            "where e.id in(" + cadEve + ") and e.tipo=1"
+        "select count(*) from evento e "
+        "where e.id in(" + cadEve + ") and e.tipo=1"
         ") "
         "from alumno a "
-        "where a.tdoc=" + tdoc + " and a.documento='" + doc + "'"  
+        "where a.tdoc=" + tdoc + " and a.documento='" + doc + "'"
     ).fetchone()[0]
-    reParti(iter(eveReg),tdoc,doc,cate)
+    reParti(iter(eveReg), tdoc, doc, cate)
     conn.commit()
     return redirect("/vAlumno")
 
-def reParti(itera,tdoc,doc,cate):
-    eveIdTipo = next(itera,None)
-    delTabla("participa","tdoc=" + tdoc + " and doc='" + doc + "'")
+
+def reParti(itera, tdoc, doc, cate):
+    eveIdTipo = next(itera, None)
+    delTabla("participa", "tdoc=" + tdoc + " and doc='" + doc + "'")
     upTabla(
-        "alumno","categoria=" + str(cate),
+        "alumno", "categoria=" + str(cate),
         "tdoc=" + tdoc + " and documento='" + doc + "'"
     )
     while eveIdTipo:
         while eveIdTipo and eveIdTipo[1] == 1:
-            eveIdTipo = insparti(tdoc,doc,str(eveIdTipo[0]),cate,itera)
+            eveIdTipo = insparti(tdoc, doc, str(eveIdTipo[0]), cate, itera)
             cate -= 1
         while eveIdTipo and eveIdTipo[1] != 1:
-            eveIdTipo = insparti(tdoc,doc,str(eveIdTipo[0]),cate,itera)
+            eveIdTipo = insparti(tdoc, doc, str(eveIdTipo[0]), cate, itera)
 
-def insparti(tdoc,doc,idEve,cate,reco):
+
+def insparti(tdoc, doc, idEve, cate, reco):
     insTabla(
-        "participa","tdoc,doc,idevento,categoria",
+        "participa", "tdoc,doc,idevento,categoria",
         tdoc + ",'" + doc + "'," + idEve + "," + str(cate)
     )
-    return next(reco,None)
+    return next(reco, None)
+
 
 @app.route("/eImagen/<string:idImagen>/<string:direc>")
-def eImagen(idImagen,direc):
+def eImagen(idImagen, direc):
     tiempoSesion()
-    direc = direc.replace("ƒ","/")
-    delTabla("imagen","idevento=" + idImagen + " and direccion='" + direc + "'")
+    direc = direc.replace("ƒ", "/")
+    delTabla("imagen", "idevento=" + idImagen +
+             " and direccion='" + direc + "'")
     os.remove("static/" + direc)
     conn.commit()
     return redirect("/vImagen")
+
 
 @app.route("/eNotificacion/<string:idNoti>")
 def eNotificacion(idNoti):
     tiempoSesion()
     delTabla(
-        "notifica","idnoti=" + idNoti + " and tdoc="
+        "notifica", "idnoti=" + idNoti + " and tdoc="
         + str(session['tdoc']) + " and documento='" + session['doc'] + "'"
     )
     if not conn.execute(
         "select 1 from notifica n "
         "where n.idnoti=" + idNoti
     ).fetchone():
-        delTabla("notidicacion","id=" + idNoti)
+        delTabla("notidicacion", "id=" + idNoti)
     conn.commit()
     return redirect("/MainBase")
+
 
 @app.route("/elimAlu/<string:cadAlu>")
 def elimAlu(cadAlu):
@@ -2027,17 +2217,20 @@ def elimAlu(cadAlu):
     cadAlu = cadAlu.split(".")
     for dato in cadAlu:
         dato = dato.split(",")
-        delTabla("aludesa","tdocalu=" + dato[0] + " and docalu='" + dato[1] + "'")
-        delTabla("participa","tdoc=" + dato[0] + " and doc='" + dato[1] + "'")
-        delTabla("matricula","tdoc=" + dato[0] + " and doc='" + dato[1] + "'")
-        delTabla("telefono","tdoc=" + dato[0] + " and documento='" + dato[1] + "'")
+        delTabla("aludesa", "tdocalu=" +
+                 dato[0] + " and docalu='" + dato[1] + "'")
+        delTabla("participa", "tdoc=" + dato[0] + " and doc='" + dato[1] + "'")
+        delTabla("matricula", "tdoc=" + dato[0] + " and doc='" + dato[1] + "'")
+        delTabla("telefono", "tdoc=" +
+                 dato[0] + " and documento='" + dato[1] + "'")
         foto = conn.execute(
             "select a.foto from alumno a "
             "where a.tdoc=" + dato[0] + " and a.documento='" + dato[1] + "'"
         ).fetchone()[0]
-        if foto != "Imagenes/SinFoto.jpg":
+        if foto != "Imagenes/sin_foto.png":
             os.remove("static/" + foto)
-        delTabla("alumno","tdoc=" + dato[0] + " and documento='" + dato[1] + "'")
+        delTabla("alumno", "tdoc=" + dato[0] +
+                 " and documento='" + dato[1] + "'")
     conn.commit()
     return redirect("/vAlumno")
 
@@ -2063,17 +2256,20 @@ def cambioGim(tDocUsu, docUsu):
         dicGim['direGim'].append(direcgim)
     return jsonify(dicGim)
 
-def upTabla(tabla,cambio,condi):
+
+def upTabla(tabla, cambio, condi):
     conn.execute(
         "update " + tabla + " set " + cambio + " where " + condi
     )
 
-def delTabla(tabla,condi):
+
+def delTabla(tabla, condi):
     conn.execute(
         "delete from " + tabla + " where " + condi
     )
 
-def insTabla(tabla,valTabla,valInser):
+
+def insTabla(tabla, valTabla, valInser):
     conn.execute(
         "insert into " + tabla + " (" + valTabla + ") values(" + valInser + ")"
     )

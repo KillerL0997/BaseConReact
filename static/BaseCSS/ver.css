@@ -3,8 +3,20 @@
     flex-direction: row;
     justify-content: space-around;
 }
+.contAlu{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: max-content;
+}
 .filtro{
     width: 20%;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+}
+.filtroAlu{
+    width: 300px;
     display: flex;
     flex-direction: column;
     text-align: center;
@@ -12,6 +24,11 @@
 .tabla{
     min-width: 70%;
     width: fit-content;
+    height: fit-content;
+    text-align: center;
+}
+.tablaAlu{
+    width: max-content;
     height: fit-content;
     text-align: center;
 }
@@ -43,9 +60,8 @@ th, td{
 .tablaImagen section div img{
     width: 100%;
 }
-#detalles{
+#detalles, #detaAlum{
     text-align: center;
-    position: fixed;
     z-index: 1;
     width: 50%;
     margin: 10% 25%;
@@ -54,19 +70,26 @@ th, td{
     border-color: black;
     border-style: groove;
 }
-#detalles button{
+#detalles{
+    position: absolute;
+}
+#detaAlum{
+    position: fixed;
+}
+#detalles button, #detaAlum button{
     width: 35px;
     float: right;
 }
-#detalles .tresBotones, #detalles .dosBotones{
+#detalles .tresBotones, #detalles .dosBotones,
+#detaAlum .tresBotones, #detaAlum .dosBotones{
     width: 100%;
     display: flex;
     justify-content: space-around;
 }
-#detalles .tresBotones button{
+#detalles .tresBotones button, #detaAlum .tresBotones button{
     width: 30%;
 }
-#detalles .dosBotones button{
+#detalles .dosBotones button, #detaAlum .dosBotones button{
     width: 45%;
 }
 #detaGim{
@@ -90,14 +113,15 @@ th, td{
     width: 45%;
 }
 @media screen and (max-width: 768px){
-    .filtro{
+    .filtro, .filtroAlu{
         z-index: 1;
         position: absolute;
         left: 0;
         background-color: darkgrey;
         width: 35%;
     }
-    .filtro div input, .filtro div select{
+    .filtro div input, .filtro div select,
+    .filtroAlu div input, .filtroAlu div select{
         width: 95%;
     }
     .tabla{
@@ -109,7 +133,7 @@ th, td{
     .tablaImagen section div{
         width: 40%;
     }
-    #detalles{
+    #detalles, #detaAlum{
         position: fixed;
         z-index: 2;
         margin: 5%;

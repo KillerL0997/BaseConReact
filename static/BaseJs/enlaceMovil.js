@@ -4,6 +4,9 @@ let div2 = document.getElementById("div2");
 let div1 = document.getElementById("div1");
 if (!cont){
     cont = document.getElementsByClassName("filtro")[0];
+    if(!cont){
+        cont = document.getElementsByClassName("filtroAlu")[0];
+    }
 }
 cont.style.minHeight = (window.screen.height - 30) + "px";
 if (window.screen.width <= 768){

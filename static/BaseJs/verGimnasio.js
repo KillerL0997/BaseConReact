@@ -47,53 +47,7 @@ function filtarGimnasio(url){
     });
 }
 function detalleGimnasio(idGim){
-    fetch("/detalleGimnasio/" + idGim).then((response) => {
-        response.json().then((data) => {
-            deta.style.display = "block";
-            let detaGim = document.getElementById("detaGim");
-            detaGim.innerHTML = "<div><img style='width:250px;' src='"
-            + data['logo'] + "'></div><div><p>Nombre: " + data['nom']
-            + "</p><p>Direccion: " + data['direc'] + "</p></div>";
-            if (window.screen.width <= 768){
-                detaGim.style.flexDirection = "column";
-            } else {
-                detaGim.style.flexDirection = "row-reverse";
-            }
-            let botEdi = document.getElementById("btnEditar");
-            botEdi.setAttribute(
-                "onclick","location.href='/eGimnasio/" + idGim + "'"
-            );
-            botEdi.style.display = "block";
-            let botAlu = document.getElementById("btnAluGim");
-            botAlu.setAttribute(
-                "onclick","vAluGimnasio(" + idGim + ")"
-            );
-            botAlu.innerHTML = "ver Alumnos";
-        });
-    });
-}
-function vAluGimnasio(idGim){
-    fetch("/vAluGimnasio/" + idGim).then((response) => {
-        response.json().then((data) => {
-            let text = "";
-            for(let i = 0; i < data['lim']; i++){
-                text += "<tr><td>" + data['nom'][i]
-                + "</td><td>" + data['ape'][i] + "</td><td>"
-                + data['cate'][i] + "</td></tr>";
-            }
-            document.getElementById("btnEditar").style.display = "none";
-            let bot = document.getElementById("btnAluGim");
-            bot.innerHTML = "Regresar";
-            bot.setAttribute("onclick","detalleGimnasio(" + idGim + ")");
-            let detaGim = document.getElementById("detaGim");
-            detaGim.innerHTML = "<h1>Alumnos</h1><table><thead><th></th><th></th><th></th></thead><tbody>"
-            + text + "</tbody></table>";
-            detaGim.style.flexDirection = "column";
-        });
-    });
-}
-function cerrar(){
-    deta.style.display = "none";
+    window.location.href = "/direcGimnasio/" + idGim;
 }
 function desaGim(idGim){
     location.href= '/desaGim/' + idGim;

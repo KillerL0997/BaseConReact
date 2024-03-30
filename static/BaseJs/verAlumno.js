@@ -1,5 +1,5 @@
 botVerHabi();
-var deta = document.getElementById("detalles");
+var deta = document.getElementById("detaAlum");
 let sel = document.getElementById("usuAlu");
 
 function filtroAlumno() {
@@ -25,22 +25,16 @@ function filtroAlumno() {
     let fhEnat = (
         document.getElementById("fhEnat")
     ) ? document.getElementById("fhEnat").value : null;
-    let fdFetra = (
-        document.getElementById("fdFetra")
-    ) ? document.getElementById("fdFetra").value : null;
-    let fhFetra = (
-        document.getElementById("fhFetra")
-    ) ? document.getElementById("fhFetra").value : null;
     fetch(
         "/filtroAlumno/" + ((nom) ? nom : "-") + "/" + ((ape) ? ape : "-") + "/"
         + cate + "/" + ((fdExamen) ? fdExamen : "-") + "/" + ((fhExamen) ? fhExamen : "-")
         + "/" + ((fdAATEE) ? fdAATEE : "-") + "/" + ((fhAATEE) ? fhAATEE : "-") + "/"
         + ((fdEnat) ? fdEnat : "-") + "/" + ((fhEnat) ? fhEnat : "-") + "/"
-        + ((fdFetra) ? fdFetra : "-") + "/" + ((fhFetra) ? fhFetra : "-") + "/"
         + ((usu[0]) ? usu[0] : "-") + "/" + ((usu[1]) ? usu[1] : "-") + "/"
         + ((gim) ? gim : "-")
     ).then((response) => {
         response.json().then((data) => {
+            document.getElementById("cantAlus").innerHTML = "Cantidad de alumnos encontrados: " + data['lim'];
             let lim = data['lim'];
             if(document.getElementById("fdEnat")){
                 for (let i = 0; i < lim; i++) {
@@ -51,8 +45,8 @@ function filtroAlumno() {
                         + data['insNom'][i] + " " + data['insApe'][i] + "</td>"
                         + "<td>" + data['gimNom'][i] + "</td><td>" + data['cate'][i] + "</td><td>" + data['fAATEE'][i]
                         + "</td><td>" + data['fEnat'][i]
-                        + "</td><td><button class='btnRedondeado' onclick=detalleAlumno("
-                        + data['tdoc'][i] + ",'" + data['doc'][i] + "')>Ver</button></td></tr>"
+                        + "</td><td><button class='btnRedondeado' onclick=location.href='/detalleAlumno/"
+                        + data['tdoc'][i] + "/" + data['doc'][i] + "'>Ver</button></td></tr>"
                 }
             } else {
                 for (let i = 0; i < lim; i++) {
@@ -62,8 +56,8 @@ function filtroAlumno() {
                         + "</td><td>" + data['ape'][i] + "</td><td>" + data['edad'][i] + " Años</td><td>"
                         + data['insNom'][i] + " " + data['insApe'][i] 
                         + "</td><td>" + data['gimNom'][i] + "</td><td>" + data['cate'][i] +
-                        "</td><td><button class='btnRedondeado' onclick=detalleAlumno("
-                        + data['tdoc'][i] + ",'" + data['doc'][i] + "')>Ver</button></td></tr>"
+                        "</td><td><button class='btnRedondeado' onclick=location.href='/detalleAlumno/"
+                        + data['tdoc'][i] + "/" + data['doc'][i] + "'>Ver</button></td></tr>"
                 }
             }
         });
@@ -94,7 +88,7 @@ function vDesaAlu() {
                 tabla.innerHTML += "<tr><td><input type='checkbox' name='checkAlu' value='"
                     + data['tdoc'][i] + "," + data['doc'][i] + "'></td><td>" + data['fecha'][i]
                     + "</td><td>" + data['nom'][i] + "</td><td>" + data['ape'][i] + "</td><td>"
-                    + data['cate'][i] + "</td><td>" + data['edad'][i] + " Años</td></tr>";
+                    + data['edad'][i] + " Años</td><td>" + data['cate'][i] + "</td></tr>";
             }
         });
     });
@@ -136,114 +130,6 @@ function limpiaFiltros() {
         document.getElementById("Apellido").value =
         document.getElementById("fdExamen").value =
         document.getElementById("fhExamen").value = "";
-}
-function detalleAlumno(tdoc, doc) {
-    fetch("/detalleAlumno/" + tdoc + "/" + doc).then((response) => {
-        response.json().then((data) => {
-            deta.style.display = "block";
-            let detaAlu = document.getElementById("detaAlu");
-            if (window.screen.width <= 768){
-                detaAlu.style.flexDirection = "column";
-            } else {
-                detaAlu.style.flexDirection = "row-reverse";
-            }
-            detaAlu.innerHTML = "<div><img style=width:100%; src='" + data['foto']
-                + "'></div><div><h1>" + data['nom'] + " "
-                + data['ape'] + "</h1><p>Categoria: " + data['cate'] +
-                "</p><p>Nacionalidad: " + data['nacio'] + "</p><p>Nacimiento: "
-                + data['fnac'] + "</p><p>Inscripción: " + data['finsc']
-                + "</p><p>Observaciones: " + data['obs'] + "</p><p>Correo: "
-                + data['mail'] + "</p><p>Localidad: " + data['loc']
-                + "</p><p>Instructor: " + data['nominstru'] + " " +
-                data['apeinstru'] + "</p><p>Gimnasio: " + data['nomgim']
-                + "</p></div>";
-            let btnEditar = document.getElementById("btnEditarAlu");
-            btnEditar.innerHTML = "Editar";
-            btnEditar.setAttribute(
-                "onclick", "location.href='/eAlumno/" + tdoc + "/" + doc + "'"
-            );
-            btnEditar.style.display = "block";
-            let btnEvento = document.getElementById("btnEventoAlu");
-            btnEvento.innerHTML = "Eventos";
-            btnEvento.setAttribute(
-                "onclick", "vEveAlumno('" + tdoc + "'," + doc + ")"
-            );
-            btnEvento.style.display = "block";
-            if (data['matri']){
-                let btnMatri = document.getElementById("btnMatrialu");
-                btnMatri.innerHTML = "Matriculas";
-                btnMatri.setAttribute(
-                    "onclick", "vMatriAlu('" + tdoc + "'," + doc + ")"
-                );
-                btnMatri.style.display = "block";
-            } else {
-                document.getElementById("btnMatrialu").style.display = "none";
-            }
-            let btnRegre = document.getElementById("regresar");
-            btnRegre.style.display = "none";
-        });
-    });
-}
-function vEveAlumno(tdoc, doc) {
-    fetch("/vEveAlumno/" + tdoc + "/" + doc).then((response) => {
-        response.json().then((data) => {
-            let detaAlu = document.getElementById("detaAlu");
-            detaAlu.style.flexDirection = "column";
-            detaAlu.innerHTML = "<h1>Eventos</h1>";
-            let text = "";
-            for (let i = 0; i < data['lim']; i++) {
-                text += "<tr><td>" + data['fecha'][i]
-                    + "</td><td>" + data['tipo'][i] + "</td><td>"
-                    + data['cate'][i] + "</td></tr>";
-            }
-            detaAlu.innerHTML += "<table><thead><th></th><th></th><th></th></thead><tbody>"
-                + text + "</tbody></table>";
-            let btnEditar = document.getElementById("btnEditarAlu");
-            btnEditar.innerHTML = "Ver examenes";
-            btnEditar.setAttribute(
-                "onclick", "vFilEveAlu(1," + tdoc + "," + doc + ")"
-            );
-            let btnEvento = document.getElementById("btnEventoAlu");
-            btnEvento.innerHTML = "Ver torneos";
-            btnEvento.setAttribute(
-                "onclick", "vFilEveAlu(2," + tdoc + "," + doc + ")"
-            );
-            let btnMatri = document.getElementById("btnMatrialu");
-            btnMatri.innerHTML = "Ver eventos";
-            btnMatri.setAttribute(
-                "onclick", "vFilEveAlu(3," + tdoc + "," + doc + ")"
-            );
-            btnMatri.style.display = "block";
-            let btnRegre = document.getElementById("regresar");
-            btnRegre.setAttribute("onclick", "detalleAlumno('" + tdoc + "'," + doc + ")");
-            btnRegre.style.display = "block";
-        });
-    });
-}
-function vMatriAlu(tdoc, doc) {
-    fetch("/vMatriAlu/" + tdoc + "/" + doc).then((response) => {
-        response.json().then((data) => {
-            let detaAlu = document.getElementById("detaAlu");
-            detaAlu.style.flexDirection = "column";
-            detaAlu.innerHTML = "<h1>Matriculas</h1>";
-            let text = "";
-            for (let i = 0; i < data['lim']; i++) {
-                text += "<tr><td>" + data['fecha'][i]
-                    + "</td><td>" + data['tipo'][i] + "</td></tr>";
-            }
-            detaAlu.innerHTML += "<table><thead><th></th><th></th><th></th></thead><tbody>"
-                + text + "</tbody></table>";
-            let retro = document.getElementById("regresar");
-            retro.setAttribute("onclick", "detalleAlumno('" + tdoc + "'," + doc + ")");
-            retro.style.display = "block";
-            document.getElementById("btnEditarAlu").style.display =
-                document.getElementById("btnEventoAlu").style.display =
-                document.getElementById("btnMatrialu").style.display = "none";
-        });
-    });
-}
-function cerrar() {
-    deta.style.display = "none";
 }
 function aAluEven(tipo) {
     let text = "";

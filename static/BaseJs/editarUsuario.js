@@ -1,7 +1,7 @@
 const vecId = [
     "Nombre","Apellido","Categoria",
     "Cargo","Email","TipoDocumento",
-    "Documento","Cabeza","Instructor"
+    "Documento","Cabe","Instru"
 ];
 const vecPos = [
     'nom', 'ape', 'cate', 'cargo', 'mail',

@@ -11,16 +11,20 @@ function filtrarImagen(tipo){
 function vTodoImagen(){
     fetch("/vTodoImagen").then((response) => {
         response.json().then((data) => {
-            let limExa = data['limExa'];
+            console.log(data);
+            let limExaCap = data['limExaCap'];
             let limTor = data['limTor'];
             let limVar = data['limVar'];
+            let limExaProb = data['limExaProb'];
             contenedor.innerHTML = "";
-            contenedor.innerHTML += "<h1>Examenes</h1><section>"
-            + llenarTipo(0, limExa, data) + "</section>" ;
+            contenedor.innerHTML += "<h1>Examen capital</h1><section>"
+            + llenarTipo(0, limExaCap, data) + "</section>" ;
+            contenedor.innerHTML += "<h1>Examen provincia</h1><section>"
+            + llenarTipo(limExaCap, limExaCap + limExaProb, data) + "</section>" ;
             contenedor.innerHTML += "<h1>Torneos</h1><section>"
-            + llenarTipo(limExa, limExa + limTor, data) + "</section>" ;
+            + llenarTipo(limExaCap + limExaProb, limExaCap + limTor + limExaProb, data) + "</section>" ;
             contenedor.innerHTML += "<h1>Varios</h1><section>"
-            + llenarTipo(limExa + limTor, limExa + limTor + limVar, data) + "</section>" ;
+            + llenarTipo(limExaCap + limTor + limExaProb, limExaCap + limTor + limVar + limExaProb, data) + "</section>" ;
         });
     });
 }

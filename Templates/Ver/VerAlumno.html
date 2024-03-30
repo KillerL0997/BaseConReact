@@ -10,23 +10,14 @@
 </head>
 
 <body>
-    <div id="detalles" style="display: none;">
-        <button class="btnRedondeado" onclick="cerrar()">X</button>
-        <div id="detaAlu"></div>
-        <div class="tresBotones">
-            <button class='btnRedondeado' id="btnEditarAlu"></button>
-            <button class='btnRedondeado' id="btnEventoAlu"></button>
-            <button class='btnRedondeado' id="btnMatrialu"></button>
-            <button class='btnRedondeado' id="regresar" style="display: none;">Regresar</button>
-        </div>
-    </div>
     <div class="botonLink" id="botonLink">
         <div id="div1"></div>
         <div id="div2"></div>
         <div id="div3"></div>
     </div>
-    <section class="contenedor">
-        <div class="filtro">
+    <section class="contAlu">
+        <div class="filtroAlu">
+            <h3 id="cantAlus"><h3>
             <div>
                 <label for="Nombre">Nombre</label>
                 <input type="text" id="Nombre">
@@ -92,17 +83,6 @@
                         <input type="date" id="fhEnat">
                     </div>
                 </div>
-                <div name="habiDesa">
-                    <h4>Fetra</h4>
-                    <div>
-                        <label for="fdFetra">Desde</label>
-                        <input type="date" id="fdFetra">
-                    </div>
-                    <div>
-                        <label for="fhFetra">Hasta</label>
-                        <input type="date" id="fhFetra">
-                    </div>
-                </div>
             {% endif %}
             <div name="habiDesa">
                 {% if exaCap %}
@@ -118,11 +98,12 @@
                     <button class="btnRedondeado" onclick="aAluEven(3)">Evento: {{otro}}</button>
                 {% endif %}
             </div>
+            {% if cargo %}
             <div name="habiDesa">
                 <button class="btnRedondeado" onclick="aluMatri(1)">AATEE</button>
                 <button class="btnRedondeado" onclick="aluMatri(2)">Enat</button>
-                <!-- <button class="btnRedondeado" onclick="aluMatri(3)">Fetra</button> -->
             </div>
+            {% endif %}
             <div name="habiDesa"> 
                 <button class="btnRedondeado" onclick="desaAlu()">Deshabilitar</button>
                 <button class="btnRedondeado" onclick="vDesaAlu()">Ver deshabilitados</button>
@@ -139,7 +120,7 @@
                 <button class="btnRedondeado" onclick="location.href='/MainBase'">Regresar</button>
             </div>
         </div>
-        <table border="1" class="tabla">
+        <table border="1" class="tablaAlu">
             <thead>
                 <th></th>
                 <th name="celDesaHabi">Deshabilitado</th>
@@ -153,7 +134,6 @@
                 {% if cargo %}
                     <th name="celhabiDesa">Enat</th>
                     <th name="celhabiDesa">AATEE</th>
-                    <!-- <th name="celhabiDesa">Fetra</th> -->
                 {% endif %}
                 <th name="celhabiDesa"></th>
             </thead>

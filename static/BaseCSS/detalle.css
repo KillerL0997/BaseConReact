@@ -1,0 +1,33 @@
+.contenedor{
+    width: 70%;
+    margin: 10% 15%;
+    background-color: darkgrey;
+    border: solid black 2px;
+    border-radius: 20px;
+    text-align: center;
+}
+.detalle, .cuatroBotones,.detalleEvento,.tresBotones{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+}
+.detalle p, .cuatroBotones button{
+    width: 40%;
+}
+.detalleEvento p{
+    width: 30%;
+}
+.unBoton{
+    width: 30% !important;
+}
+.contConFoto{
+    display: flex;
+    flex-direction: row;
+}
+.contConFoto div{
+    width: 50%;
+}
+.tresBotones button{
+    width: 30%;
+}
