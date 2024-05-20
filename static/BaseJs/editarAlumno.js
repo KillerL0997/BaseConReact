@@ -25,7 +25,7 @@ function cargarAlumno(tdoc,doc){
                 + data['cont'][i]
                 + "' name='Contacto'></div><div><label for='Telefono'>Telefono</label><input type='text' value='"
                 + data['tel'][i]
-                + "' name='Telefono'></div><button type='button' name='elimTel' onclick='eliminarTelefono("
+                + "' name='Telefono'></div><button class='btnRedondeado' type='button' name='elimTel' onclick='eliminarTelefono("
                 + cant +")'>Eliminar</button>";
                 div.innerHTML = text;
                 cont.appendChild(div);

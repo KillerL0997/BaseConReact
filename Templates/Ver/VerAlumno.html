@@ -17,7 +17,7 @@
     </div>
     <section class="contAlu">
         <div class="filtroAlu">
-            <h3 id="cantAlus"><h3>
+            <h3 id="cantAlus"></h3>
             <div>
                 <label for="Nombre">Nombre</label>
                 <input type="text" id="Nombre">
@@ -104,7 +104,8 @@
                 <button class="btnRedondeado" onclick="aluMatri(2)">Enat</button>
             </div>
             {% endif %}
-            <div name="habiDesa"> 
+            <div name="habiDesa">
+                <button class="btnRedondeado" onclick="aluLibre()">Libreta</button>
                 <button class="btnRedondeado" onclick="desaAlu()">Deshabilitar</button>
                 <button class="btnRedondeado" onclick="vDesaAlu()">Ver deshabilitados</button>
             </div>
@@ -125,8 +126,8 @@
                 <th></th>
                 <th name="celDesaHabi">Deshabilitado</th>
                 <th name="celhabiDesa">Ult. examen</th>
-                <th>Nombre</th>
                 <th>Apellido</th>
+                <th>Nombre</th>
                 <th>Edad</th>
                 <th name="celhabiDesa">Instructor</th>
                 <th name="celhabiDesa">Gimnasio</th>

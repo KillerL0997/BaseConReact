@@ -1,4 +1,4 @@
-.contenedor{
+.contenedor {
     width: 70%;
     margin: 10% 15%;
     background-color: darkgrey;
@@ -6,28 +6,70 @@
     border-radius: 20px;
     text-align: center;
 }
-.detalle, .cuatroBotones,.detalleEvento,.tresBotones{
+
+.detalle,
+.cuatroBotones,
+.detalleEvento,
+.tresBotones {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: space-evenly;
 }
-.detalle p, .cuatroBotones button{
+
+.detalle p,
+.cuatroBotones button {
     width: 40%;
 }
-.detalleEvento p{
+
+.detalleEvento p {
     width: 30%;
 }
-.unBoton{
+
+.unBoton {
     width: 30% !important;
 }
-.contConFoto{
+
+.contConFoto {
     display: flex;
     flex-direction: row;
 }
-.contConFoto div{
+
+.contConFoto div {
     width: 50%;
 }
-.tresBotones button{
+
+.contConFoto div img {
+    width: inherit;
+}
+
+.tresBotones button {
     width: 30%;
+}
+
+@media screen and (max-width: 768px) {
+    .contenedor {
+        width: 100%;
+        margin: 10% 0;
+    }
+
+    .detalle,
+    .contConFoto div,
+    .contConFoto div p {
+        width: 100%;
+    }
+
+    .detalle p,
+    .cuatroBotones button,
+    .tresBotones button {
+        width: 100%;
+    }
+
+    .contConFoto {
+        flex-direction: column-reverse;
+    }
+
+    .contConFoto div img {
+        width: 50%;
+    }
 }

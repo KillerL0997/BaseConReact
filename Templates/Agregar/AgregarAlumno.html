@@ -8,14 +8,15 @@
     <title>Agregar alumno</title>
 </head>
 <body>
+    <input id='msj' value='{{msj}}' hidden>
     <form action="" method="post" enctype="multipart/form-data" class="cAgregarUsu">
         <section>
             <label for="Nombre">Nombre</label>
-            <input type="text" name="Nombre" id="">
+            <input type="text" name="Nombre" id="" required>
         </section>
         <section>
             <label for="Apellido">Apellido</label>
-            <input type="text" name="Apellido" id="">
+            <input type="text" name="Apellido" id="" required>
         </section>
         <section>
             <label for="TipoDocumento">Documento</label>
@@ -25,7 +26,7 @@
                         <option value="{{id}}">{{tipo}}</option>
                     {% endfor %}
                 </select>
-                <input type="text" name="Documento" id="Documento">
+                <input type="text" name="Documento" id="Documento" required>
             </div>
         </section>
         <section>
@@ -42,7 +43,7 @@
         </section>
         <section>
             <label for="fInscripcion">Fecha de inscripcion</label>
-            <input type="date" name="fInscripcion" id="">
+            <input type="date" name="fInscripcion" id="" required>
         </section>
         <section>
             <label for="Observaciones">Observaciones</label>
@@ -58,7 +59,7 @@
         </section>
         <section>
             <label for="fNacimiento">Fecha de nacimiento</label>
-            <input type="date" name="fNacimiento" id="">
+            <input type="date" name="fNacimiento" id="" required>
         </section>
         <section id="Contacto">
             <h4>Contacto</h4>
@@ -81,6 +82,7 @@
         <section>
             <label for="Instructor">Instructor</label>
             <select name="Instructor" id="Instru">
+                <option value=""></option>
                 {% for tdoc, doc, ape, nom, cate in usuario %}
                     <option value="{{tdoc}},{{doc}}">{{ape}} {{nom}} {{cate}}</option>
                 {% endfor %}
@@ -88,7 +90,7 @@
         </section>
         <section>
             <label for="Gimnasio">Gimnasio</label>
-            <select name="Gimnasio" id="Gim">
+            <select name="Gimnasio" id="Gim" required>
             </select>
         </section>
         <div class="dosBotones">

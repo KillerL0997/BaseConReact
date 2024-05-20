@@ -38,23 +38,23 @@ function filtroAlumno() {
             let lim = data['lim'];
             if(document.getElementById("fdEnat")){
                 for (let i = 0; i < lim; i++) {
-                    tabla.innerHTML += "<tr><td><input type='checkbox' name='checkAlu' value='"
+                    tabla.innerHTML += "<tr " + ((data['libreta'][i] == 0) ? "style='background-color: red;'" : "''") + "><td><input type='checkbox' name='checkAlu' value='"
                         + data['tdoc'][i] + "," + data['doc'][i] + "'></td><td>"
-                        + data['fecha'][i] + "</td><td>" + data['nom'][i]
-                        + "</td><td>" + data['ape'][i] + "</td><td>" + data['edad'][i] + " Años</td><td>"
+                        + data['fecha'][i] + "</td><td>" + data['ape'][i]
+                        + "</td><td>" + data['nom'][i] + "</td><td style='text-align:center;'>" + data['edad'][i] + "</td><td>"
                         + data['insNom'][i] + " " + data['insApe'][i] + "</td>"
-                        + "<td>" + data['gimNom'][i] + "</td><td>" + data['cate'][i] + "</td><td>" + data['fAATEE'][i]
-                        + "</td><td>" + data['fEnat'][i]
+                        + "<td>" + data['gimNom'][i] + "</td><td>" + data['cate'][i] + "</td><td>" + data['fEnat'][i]
+                        + "</td><td>" + data['fAATEE'][i]
                         + "</td><td><button class='btnRedondeado' onclick=location.href='/detalleAlumno/"
                         + data['tdoc'][i] + "/" + data['doc'][i] + "'>Ver</button></td></tr>"
                 }
             } else {
                 for (let i = 0; i < lim; i++) {
-                    tabla.innerHTML += "<tr><td><input type='checkbox' name='checkAlu' value='"
+                    tabla.innerHTML += "<tr " + ((data['libreta'][i] == 0) ? "style='background-color: red;'" : "''") + "><td><input type='checkbox' name='checkAlu' value='"
                         + data['tdoc'][i] + "," + data['doc'][i] + "'></td><td>"
-                        + data['fecha'][i] + "</td><td>" + data['nom'][i]
-                        + "</td><td>" + data['ape'][i] + "</td><td>" + data['edad'][i] + " Años</td><td>"
-                        + data['insNom'][i] + " " + data['insApe'][i] 
+                        + data['fecha'][i] + "</td><td>" + data['ape'][i]
+                        + "</td><td>" + data['nom'][i] + "</td><td style='text-align:center;'>" + data['edad'][i] + "</td><td>"
+                        + data['insNom'][i] + " " + data['insApe'][i]
                         + "</td><td>" + data['gimNom'][i] + "</td><td>" + data['cate'][i] +
                         "</td><td><button class='btnRedondeado' onclick=location.href='/detalleAlumno/"
                         + data['tdoc'][i] + "/" + data['doc'][i] + "'>Ver</button></td></tr>"
@@ -83,11 +83,12 @@ function vDesaAlu() {
     document.getElementById("botFiltro").setAttribute("onclick", "filtroDesaAlu()");
     fetch("/vDesaAlu").then(response => {
         response.json().then(data => {
+            document.getElementById("cantAlus").innerHTML = "Cantidad de alumnos encontrados: " + data['lim'];
             let lim = data['lim'];
             for (let i = 0; i < lim; i++) {
                 tabla.innerHTML += "<tr><td><input type='checkbox' name='checkAlu' value='"
                     + data['tdoc'][i] + "," + data['doc'][i] + "'></td><td>" + data['fecha'][i]
-                    + "</td><td>" + data['nom'][i] + "</td><td>" + data['ape'][i] + "</td><td>"
+                    + "</td><td>" + data['ape'][i] + "</td><td>" + data['nom'][i] + "</td><td>"
                     + data['edad'][i] + " Años</td><td>" + data['cate'][i] + "</td></tr>";
             }
         });
@@ -164,12 +165,13 @@ function filtroDesaAlu() {
         + "/" + cate
     ).then(response => {
         response.json().then(data => {
+            document.getElementById("cantAlus").innerHTML = "Cantidad de alumnos encontrados: " + data['lim'];
             let lim = data['lim'];
             for (let i = 0; i < lim; i++) {
                 tabla.innerHTML += "<tr><td><input type='checkbox' name='checkAlu' value='"
                     + data['tdoc'][i] + "," + data['doc'][i] + "'></td><td>" + data['fecha'][i]
-                    + "</td><td>" + data['ape'][i] + " " + data['nom'][i] + "</td><td>"
-                    + data['cate'][i] + "</td></tr>";
+                    + "</td><td>" + data['ape'][i] + "</td><td>" + data['nom'][i] + "</td><td>"
+                    + data['edad'][i] + " Años</td><td>" + data['cate'][i] + "</td></tr>";
             }
         });
     });
@@ -342,5 +344,16 @@ function elimAlu() {
     });
     if (text) {
         location.href = "/elimAlu/" + text.substring(0, text.length - 1);
+    }
+}
+function aluLibre(){
+    let text = "";
+    document.getElementsByName("checkAlu").forEach(elem => {
+        if (elem.checked) {
+            text += elem.value + ".";
+        }
+    });
+    if (text) {
+        location.href = "/aluLibre/" + text.substring(0, text.length - 1);
     }
 }

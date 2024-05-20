@@ -30,7 +30,7 @@
 .tablaAlu{
     width: max-content;
     height: fit-content;
-    text-align: center;
+    text-align: left;
 }
 th, td{
     font-size: 1rem;
