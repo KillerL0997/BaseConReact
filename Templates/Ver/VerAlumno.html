@@ -6,28 +6,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/BaseCSS/common.css">
     <link rel="stylesheet" href="/static/BaseCSS/ver.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <title>Ver alumnos</title>
 </head>
 
 <body>
+    <img src="../../static/Imagenes/ENAT.png" alt="" class="imagenFondo">
     <div class="botonLink" id="botonLink">
-        <div id="div1"></div>
-        <div id="div2"></div>
-        <div id="div3"></div>
+        <span class="material-symbols-outlined" style="font-size: 40px;">menu</span>
     </div>
     <section class="contAlu">
         <div class="filtroAlu">
             <h3 id="cantAlus"></h3>
             <div>
-                <label for="Nombre">Nombre</label>
+                <h2>Nombre</h2>
                 <input type="text" id="Nombre">
             </div>
             <div>
-                <label for="Apellido">Apellido</label>
+                <h2>Apellido</h2>
                 <input type="text" id="Apellido">
             </div>
             <div>
-                <label for="Categoria">Categoria</label>
+                <h2>Categoria</h2>
                 <select id="Categoria">
                     {% for idCate, cate in categoria %}
                     <option value="{{idCate}}">{{cate}}</option>
@@ -36,18 +36,18 @@
             </div>
             <div>
                 <h4 id="asignaUsuario"></h4>
-                <div class="selUsuGim">
-                    <select id="usuAlu">
-                        {% for tdoc, doc, ape, nom, cate in usuario %}
-                            <option value="{{tdoc}},{{doc}}">{{ape}} {{nom}} {{cate}}</option>
-                        {% endfor %}
-                    </select>
-                    <select id="usuGim">
-                        {% for id, nom in gimnasio %}
-                            <option value="{{id}}">{{nom}}</option>
-                        {% endfor %}
-                    </select>
-                </div>
+                <h2>Usuario</h2>
+                <select id="usuAlu">
+                    {% for tdoc, doc, ape, nom, cate in usuario %}
+                    <option value="{{tdoc}},{{doc}}">{{ape}} {{nom}} {{cate}}</option>
+                    {% endfor %}
+                </select>
+                <h2>Gimnasio</h2>
+                <select id="usuGim">
+                    {% for id, nom in gimnasio %}
+                    <option value="{{id}}">{{nom}}</option>
+                    {% endfor %}
+                </select>
             </div>
             <div name="habiDesa">
                 <h4>Ultimo examen</h4>
@@ -60,42 +60,24 @@
                     <input type="date" id="fhExamen">
                 </div>
             </div>
-            {% if cargo %}
-                <div name="habiDesa">
-                    <h4>AATEE</h4>
-                    <div>
-                        <label for="fdAATEE">Desde</label>
-                        <input type="date" id="fdAATEE">
-                    </div>
-                    <div>
-                        <label for="fhAATEE">Hasta</label>
-                        <input type="date" id="fhAATEE">
-                    </div>
-                </div>
-                <div name="habiDesa">
-                    <h4>Enat</h4>
-                    <div>
-                        <label for="fdEnat">Desde</label>
-                        <input type="date" id="fdEnat">
-                    </div>
-                    <div>
-                        <label for="fhEnat">Hasta</label>
-                        <input type="date" id="fhEnat">
-                    </div>
-                </div>
-            {% endif %}
+            <div>
+                <button type="button" class="btnRedondeado" onclick="ordenar()" id="exa">Ordenar por examen</button>
+            </div>
             <div name="habiDesa">
-                {% if exaCap %}
-                    <button class="btnRedondeado" onclick="aAluEven(1)">Examen capital: {{exaCap}}</button>
+                {% if exaCap[0] %}
+                <button class="btnRedondeado" onclick="aAluEven('{{exaCap[1]}}')">Examen capital: {{exaCap[0]}}</button>
                 {% endif %}
-                {% if exaProv %}
-                    <button class="btnRedondeado" onclick="aAluEven(1)">Examen provincia: {{exaProv}}</button>
+                {% if exaProv[0] %}
+                <button class="btnRedondeado" onclick="aAluEven('{{exaProv[1]}}')">Examen provincia: {{exaProv[0]}}</button>
                 {% endif %}
-                {% if tor %}
-                    <button class="btnRedondeado" onclick="aAluEven(2)">Torneo: {{tor}}</button>
+                {% if tor[0] %}
+                <button class="btnRedondeado" onclick="aAluEven('{{tor[1]}}')">Torneo: {{tor[0]}}</button>
                 {% endif %}
-                {% if otro %}
-                    <button class="btnRedondeado" onclick="aAluEven(3)">Evento: {{otro}}</button>
+                {% if otro[0] %}
+                <button class="btnRedondeado" onclick="aAluEven('{{otro[1]}}')">Evento: {{otro[0]}}</button>
+                {% endif %}
+                {% if dan[0] %}
+                <button class="btnRedondeado" onclick="aAluEven('{{dan[1]}}')">Examen de danes: {{dan[0]}}</button>
                 {% endif %}
             </div>
             {% if cargo %}
@@ -105,7 +87,6 @@
             </div>
             {% endif %}
             <div name="habiDesa">
-                <button class="btnRedondeado" onclick="aluLibre()">Libreta</button>
                 <button class="btnRedondeado" onclick="desaAlu()">Deshabilitar</button>
                 <button class="btnRedondeado" onclick="vDesaAlu()">Ver deshabilitados</button>
             </div>
@@ -133,8 +114,8 @@
                 <th name="celhabiDesa">Gimnasio</th>
                 <th>Categoria</th>
                 {% if cargo %}
-                    <th name="celhabiDesa">Enat</th>
-                    <th name="celhabiDesa">AATEE</th>
+                <th name="celhabiDesa">Enat</th>
+                <th name="celhabiDesa">AATEE</th>
                 {% endif %}
                 <th name="celhabiDesa"></th>
             </thead>
@@ -144,4 +125,5 @@
 </body>
 <script src="/static/BaseJs/verAlumno.js"></script>
 <script src="/static/BaseJs/enlaceMovil.js"></script>
+
 </html>

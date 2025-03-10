@@ -3,7 +3,7 @@ var deta = document.getElementById("detaAlum");
 let sel = document.getElementById("usuAlu");
 
 function filtroAlumno() {
-    document.getElementById("asignaUsuario").innerHTML = "Usuario";
+    document.getElementById("asignaUsuario").innerHTML = "";
     let tabla = document.getElementById("TablaAlumno");
     tabla.innerHTML = "";
     let nom = document.getElementById("Nombre").value;
@@ -13,38 +13,25 @@ function filtroAlumno() {
     let gim = document.getElementById("usuGim").value;
     let fdExamen = document.getElementById("fdExamen").value;
     let fhExamen = document.getElementById("fhExamen").value;
-    let fdAATEE = (
-        document.getElementById("fdAATEE")
-    ) ? document.getElementById("fdAATEE").value : null;
-    let fhAATEE = (
-        document.getElementById("fhAATEE")
-    ) ? document.getElementById("fhAATEE").value : null;
-    let fdEnat = (
-        document.getElementById("fdEnat")
-    ) ? document.getElementById("fdEnat").value : null;
-    let fhEnat = (
-        document.getElementById("fhEnat")
-    ) ? document.getElementById("fhEnat").value : null;
+    let orden = document.getElementById("exa");
     fetch(
         "/filtroAlumno/" + ((nom) ? nom : "-") + "/" + ((ape) ? ape : "-") + "/"
         + cate + "/" + ((fdExamen) ? fdExamen : "-") + "/" + ((fhExamen) ? fhExamen : "-")
-        + "/" + ((fdAATEE) ? fdAATEE : "-") + "/" + ((fhAATEE) ? fhAATEE : "-") + "/"
-        + ((fdEnat) ? fdEnat : "-") + "/" + ((fhEnat) ? fhEnat : "-") + "/"
-        + ((usu[0]) ? usu[0] : "-") + "/" + ((usu[1]) ? usu[1] : "-") + "/"
-        + ((gim) ? gim : "-")
+        + "/" + ((usu[0]) ? usu[0] : "-") + "/" + ((usu[1]) ? usu[1] : "-") + "/"
+        + ((gim) ? gim : "-") + "/" + ((orden) ? 'exa' : 'apeynom')
     ).then((response) => {
         response.json().then((data) => {
             document.getElementById("cantAlus").innerHTML = "Cantidad de alumnos encontrados: " + data['lim'];
             let lim = data['lim'];
-            if(document.getElementById("fdEnat")){
+            if(data['admin']){
                 for (let i = 0; i < lim; i++) {
                     tabla.innerHTML += "<tr " + ((data['libreta'][i] == 0) ? "style='background-color: red;'" : "''") + "><td><input type='checkbox' name='checkAlu' value='"
                         + data['tdoc'][i] + "," + data['doc'][i] + "'></td><td>"
                         + data['fecha'][i] + "</td><td>" + data['ape'][i]
                         + "</td><td>" + data['nom'][i] + "</td><td style='text-align:center;'>" + data['edad'][i] + "</td><td>"
                         + data['insNom'][i] + " " + data['insApe'][i] + "</td>"
-                        + "<td>" + data['gimNom'][i] + "</td><td>" + data['cate'][i] + "</td><td>" + data['fEnat'][i]
-                        + "</td><td>" + data['fAATEE'][i]
+                        + "<td>" + data['gimNom'][i] + "</td><td>" + data['cate'][i] + "</td><td class=" + ((data['fEnat'][i]) ? 'conMatri' : 'sinMatri') + ">"
+                        + "</td><td class=" + ((data['fAATEE'][i]) ? 'conMatri' : 'sinMatri') + ">"
                         + "</td><td><button class='btnRedondeado' onclick=location.href='/detalleAlumno/"
                         + data['tdoc'][i] + "/" + data['doc'][i] + "'>Ver</button></td></tr>"
                 }
@@ -346,14 +333,16 @@ function elimAlu() {
         location.href = "/elimAlu/" + text.substring(0, text.length - 1);
     }
 }
-function aluLibre(){
-    let text = "";
-    document.getElementsByName("checkAlu").forEach(elem => {
-        if (elem.checked) {
-            text += elem.value + ".";
-        }
-    });
-    if (text) {
-        location.href = "/aluLibre/" + text.substring(0, text.length - 1);
+
+function ordenar(){
+    if (document.getElementById('exa')){
+        let boton = document.getElementById('exa');
+        boton.innerHTML = "Ordenar por apellido y nombre";
+        boton.id = 'apeynom';
+    } else {
+        let boton = document.getElementById('apeynom');
+        boton.innerHTML = "Ordenar por examen";
+        boton.id = 'exa';
     }
+    filtroAlumno();
 }

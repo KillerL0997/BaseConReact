@@ -6,10 +6,12 @@
     border-radius: 20px;
     text-align: center;
 }
+.contenedor table{
+    width: 100%;
+}
 
 .detalle,
 .cuatroBotones,
-.detalleEvento,
 .tresBotones {
     display: flex;
     flex-direction: row;
@@ -21,10 +23,15 @@
 .cuatroBotones button {
     width: 40%;
 }
-
-.detalleEvento p {
-    width: 30%;
+.detalleEvento{
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
 }
+/* .detalleEvento p {
+    width: 30%;
+} */
 
 .unBoton {
     width: 30% !important;

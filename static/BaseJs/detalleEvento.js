@@ -26,14 +26,14 @@ function detalleEvento(idEve){
 function vAluEvento(idEve){
     fetch("/vAluEvento/" + idEve).then(response => {
         response.json().then(data => {
-            let text = "";
+            let text = "<div class='detalleEvento'><table border='1'><thead><th>Apellido y nombre</th><th>Categoria</th><th>Edad</th></thead><tbody>";
             for(let i = 0; i < data['lim']; i++){
-                text += "<div class='detalleEvento'><p>" + data['ape'][i]
-                + "</p><p>" + data['nom'][i]
-                + "</p><p>" + data['cate'][i] + "</p></div>"
+                text += "<tr><td style='text-align: left;'>" + data['ape'][i]
+                + " " + data['nom'][i]
+                + "</td><td style='text-align: left;'>" + data['cate'][i] + "</td><td>" + data['edad'][i] + "</td></tr>"
             }
             cont.innerHTML = text
-            + "<button class='btnRedondeado unBoton' onclick=detalleEvento("
+            + "</tbody></table><h3>Cantidad de alumnos: " + data['lim'] + "</h3></div><button class='btnRedondeado unBoton' onclick=detalleEvento("
             + idEve + ")>Regresar</button>";
         });
     });

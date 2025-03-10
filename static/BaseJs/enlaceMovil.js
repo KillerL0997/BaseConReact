@@ -1,7 +1,4 @@
 let cont = document.getElementsByClassName("enlaces")[0];
-let div3 = document.getElementById("div3");
-let div2 = document.getElementById("div2");
-let div1 = document.getElementById("div1");
 if (!cont){
     cont = document.getElementsByClassName("filtro")[0];
     if(!cont){
@@ -17,16 +14,22 @@ document.getElementById("botonLink").onclick = mFiltrosLink;
 function mFiltrosLink(){
     if(cont.style.left == "-35%"){
         cont.style.left = "0";
-        div3.style.display = "none";
-        document.getElementById("botonLink").style.justifyContent = "center";
-        div2.style.position = div1.style.position = "absolute";
-        div2.style.rotate = "45deg";
-        div1.style.rotate = "-45deg";
     } else {
         cont.style.left = "-35%";
-        div3.style.display = "block";
-        document.getElementById("botonLink").style.justifyContent = "space-between";
-        div2.style.position = div1.style.position = "unset";
-        div2.style.rotate = div1.style.rotate = "0deg";
     }
+}
+
+function usuariosNotificados(idNoti){
+    fetch("/usuariosNotificados/" + idNoti).then( response => {
+        response.json().then( data => {
+            let text = "No se encontraron usuarios notificadios";
+            if (data['usuarios'] != null){
+                text = "Usuarios notificados:\n";
+                data['usuarios'].forEach( usu => {
+                    text += usu + "\n";
+                });
+            }
+            alert(text);
+        })
+    })
 }

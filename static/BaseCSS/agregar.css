@@ -90,6 +90,9 @@
 #Destinatario div input{
     width: 15px;
 }
+#Descripcion{
+    width: 90%;
+}
 #Contacto{
     width: 100%;
     flex-direction: row;

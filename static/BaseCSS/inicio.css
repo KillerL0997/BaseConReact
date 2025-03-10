@@ -14,10 +14,19 @@
 .notificacion{
     width: 100%;
     margin-top: 1rem;
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    text-align: center;
 }
-.botonNoti{
+.botonesNoti{
+    display: flex;
+}
+.botonesNoti button{
     width: 25px;
-    float: right;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 @media screen and (max-width: 768px){
     .enlaces{

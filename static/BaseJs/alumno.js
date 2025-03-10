@@ -1,6 +1,13 @@
 instru = document.getElementById("Instru");
 instru.onchange = cambiaSelGim;
 cambiaSelGim();
+verMensaje();
+function verMensaje(){
+    msj = document.getElementById("msj");
+    if(msj.value != " ") {
+        window.alert(msj.value);
+    }
+}
 function cambiaSelGim(){
     gim = document.getElementById("Gim");
     gim.innerHTML = "";

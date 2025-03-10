@@ -3,6 +3,9 @@
     flex-direction: row;
     justify-content: space-around;
 }
+div select{
+    width: 80%;
+}
 .contAlu{
     display: flex;
     flex-direction: row;
@@ -111,6 +114,12 @@ th, td{
 }
 #detaAlu div{
     width: 45%;
+}
+.sinMatri{
+    background-color: red;
+}
+.conMatri{
+    background-color: green;
 }
 @media screen and (max-width: 768px){
     .filtro, .filtroAlu{

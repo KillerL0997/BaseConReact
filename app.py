@@ -5,12 +5,14 @@ from shutil import rmtree
 import os
 import pathlib
 import pymysql
+from pymysql import IntegrityError
 import shutil
 import MySQLdb
 import pytz
 from datetime import datetime, timedelta
 
-app = Flask(__name__, template_folder="/home/Leo0997/BaseConReact/Templates")
+# app = Flask(__name__, template_folder="/home/Leo0997/BaseConReact/Templates")
+app = Flask(__name__)
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOADED_PHOTOS_DEST'] = os.path.join(
@@ -20,13 +22,14 @@ app.config['UPLOADED_PHOTOS_ALLOW'] = set(
 app.config['SECRET_KEY'] = 'Taekwon-do_Enat'
 photos = UploadSet('photos', IMAGES)
 configure_uploads(app, photos)
-HOST = "Leo0997.mysql.pythonanywhere-services.com"
-USUARIO = "Leo0997"
-CONTRA = "matryoshka"
-BASE= "Leo0997$BaseConReact"
-# conn = pyodbc.connect(
-#     'Driver={ODBC Driver 17 for SQL Server};Server=DESKTOP-TFA1LI9\SQLEXPRESS;Database=BaseEnat;UID=Leo;PWD=12345'
-# ).cursor()
+# HOST = "Leo0997.mysql.pythonanywhere-services.com"
+# USUARIO = "Leo0997"
+# CONTRA = "matryoshka"
+# BASE= "Leo0997$BaseConReact"
+HOST = "localhost"
+USUARIO = "root"
+CONTRA = ""
+BASE= "BaseConReact"
 
 
 if __name__ == '__main__':
@@ -146,7 +149,7 @@ def buscaFotosEvento(tipo):
 @app.route("/")
 @app.route("/MainBase")
 def main():
-    if not session or 'tdoc' not in session:
+    if not tiempoSesion():
         return redirect(url_for("login"))
     gim = conectarAll(
         "select 1 from gimnasio g, enseñaen ee "
@@ -154,8 +157,9 @@ def main():
         " and ee.doc='" + session['doc']
         + "' and ee.idgim=g.id"
         )
+    # Notificaciones
     noti = conectarAll(
-        "select n.id, n.texto "
+        "select n.id, n.texto, nt.notificado "
         "from notificacion n, notifica nt "
         "where nt.tdoc=" + str(session['tdoc']) +
         " and nt.documento='" + session['doc']
@@ -168,20 +172,22 @@ def main():
 
 
 def tiempoSesion():
+    if not session.items() or not session['tdoc'] or not session['doc']:
+        return False
     tiempo = conectarOne(
         "select u.sesion from usuario u "
         "where u.tdoc=" + str(session['tdoc'])
         + " and u.documento='" + session['doc'] + "'"
-        )
-    if not tiempo:
-        return redirect(url_for("logout"))
-    if tiempo[0] + timedelta(hours=1) < datetime.now():
-        return redirect(url_for("logout"))
+        )[0]
+    if tiempo + timedelta(hours=1) < datetime.now():
+        eSession()
+        return False
     upTabla(
         "usuario", "sesion='" + str(datetime.now()) + "'",
         "tdoc=" + str(session['tdoc']) +
         " and documento='" + session['doc'] + "'"
     )
+    return True
 
 
 @app.route("/login", methods={"GET", "POST"})
@@ -202,21 +208,43 @@ def login():
                 " and documento='" + session['doc'] + "'"
             )
             return redirect("/MainBase")
+        else:
+            return render_template("Login.html", msj="Mail y/o contraseña incorrectos")
     return render_template("Login.html")
 
 
 @app.route("/logout")
 def logout():
-    if session and session['tdoc']:
-        session.pop("tdoc")
-        session.pop("doc")
-        session.pop("cargo")
+    if session:
+        eSession()
     return redirect("/MainBase")
+
+def eSession():
+    session.pop("tdoc")
+    session.pop("doc")
+    session.pop("cargo")
+
+@app.route("/notificado/<string:idNoti>")
+def notificado(idNoti):
+    upTabla(
+        "notifica","notificado=1",
+        "idnoti=" + idNoti + " and tdoc=" + str(session['tdoc']) + " and documento='" + session['doc'] + "'"
+        )
+    return redirect("/MainBase")
+
+@app.route("/usuariosNotificados/<string:idNoti>")
+def usuariosNotificados(idNoti):
+    lista = conectarAll("select concat(u.apellido, ' ', u.nombre) from usuario u, notifica nt where nt.notificado = 1 and nt.idnoti = "
+                        + idNoti + " and u.tdoc = nt.tdoc and u.documento = nt.documento")
+    return jsonify({'usuarios' : None if not lista else list(lista)})
 
 
 @app.route("/cambiarContra/<string:tdoc>/<string:doc>", methods={'GET', 'POST'})
 def cambiarContra(tdoc, doc):
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     if request.method == 'POST':
         contra1 = request.form.get("contra_1")
         contra2 = request.form.get("contra_2")
@@ -244,7 +272,8 @@ def cambiarContra(tdoc, doc):
 
 @app.route("/aUsuario", methods={'GET', 'POST'})
 def aUsuraio():
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     cargo = conectarAll('select * from cargo')
     categoria = conectarAll("select * from categoria c where c.id > 10")
     tDoc = conectarAll("select * from tipodocumento")
@@ -295,7 +324,6 @@ def aUsuraio():
 
 
 def aInstruCab(busca, tabla, col1, col2, tDocUsu, docUsu):
-    # tiempoSesion()
     dato = request.form.get(busca).split(",")
     if dato[0] and dato[1]:
         insTabla(
@@ -306,7 +334,8 @@ def aInstruCab(busca, tabla, col1, col2, tDocUsu, docUsu):
 
 @app.route("/aGimnasio", methods={'GET', 'POST'})
 def aGimnasio():
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     if request.method == 'POST' and (instru := request.form.getlist("instru")):
         nomGim = request.form.get("Nombre").capitalize()
         direcGim = request.form.get("Direccion").capitalize()
@@ -363,7 +392,6 @@ def aGimnasio():
 
 @app.route("/selGimInstru")
 def selGimInstru():
-    # tiempoSesion()
     condiEx = ""
     if session['cargo'] == 2:
         condiEx = " and exists(select 1 from cabeza ca where ca.doccabeza='"
@@ -385,7 +413,8 @@ def selGimInstru():
 
 @app.route("/aEvento", methods={'GET', 'POST'})
 def aEvento():
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     tipo = conectarAll("select * from tipoevento")
     if request.method == 'POST':
         eFecha = request.form.get("Fecha")
@@ -405,7 +434,8 @@ def aEvento():
 
 @app.route("/aAlumno/<string:msj>", methods={'GET', 'POST'})
 def aAlumno(msj):
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     categoria =  conectarAll("select * from categoria")
     tDoc = conectarAll("select * from tipodocumento")
     condiEx = ""
@@ -424,34 +454,46 @@ def aAlumno(msj):
     query += " where ee.tdoc = u.tdoc and ee.doc= u.documento and c.id = u.categoria" + condiEx
     usuario = list(conectarAll(query + " group by u.tdoc,u.documento,u.apellido,u.nombre,c.tipo "))
     if request.method == 'POST':
-        if not request.form.get("Instructor"):
+        datosAlu = [
+            request.form.get("Instructor"), request.form.get("Gimnasio"), request.form.get("Nombre"),
+            request.form.get("Apellido"), request.form.get("Documento"), request.form.get("fNacimiento"),
+            request.form.get("fInscripcion")
+        ]
+        if not datosAlu[0]:
             return redirect('/aAlumno/No se introdujo el instructor')
-        if not request.form.get("Gimnasio"):
+        if not datosAlu[1]:
             return redirect('/aAlumno/No se introdujo el gimnasio')
-        if not request.form.get("Nombre"):
+        if not datosAlu[2]:
             return redirect('/aAlumno/No se introdujo el nombre del alumno')
-        if not request.form.get("Apellido"):
+        if not datosAlu[3]:
             return redirect('/aAlumno/No se introdujo el apellido del alumno')
-        if not request.form.get("Documento"):
+        if not datosAlu[4]:
             return redirect('/aAlumno/No se introdujo el documento del alumno')
-        if not request.form.get("fNacimiento"):
+        if not datosAlu[5] or datosAlu[5] == '0000-00-00':
             return redirect('/aAlumno/No se introdujo fecha de nacimiento del alumno')
-        if not request.form.get("fInscripcion"):
+        if not datosAlu[6] or datosAlu[6] == '0000-00-00':
             return redirect('/aAlumno/No se introdujo fecha de inscripcion a la escuela')
         tdoc = request.form.get("TipoDocumento")
-        doc = request.form.get("Documento").replace(".","")
+        datosAlu[4] = datosAlu[4].replace(".","")
         aluExt = conectarOne(
                 "select a.apellido, a.nombre, u.nombre, u.apellido, g.nombre from alumno a, usuario u, gimnasio g "
-                "where a.documento='" + doc + "' and a.tdoc=" + tdoc + " and a.docinstru=u.documento and a.tdocinstru=u.tdoc and a.idgim=g.id"
-             )
+                "where a.documento='" + datosAlu[4] + "' and a.tdoc=" + tdoc + " and a.docinstru=u.documento and a.tdocinstru=u.tdoc and a.idgim=g.id"
+            )
         if aluExt:
             return redirect(
-                    "/aAlumno/El documento " + doc + " ya fue registrado al alumno " + aluExt[0] + " " + aluExt[1]
+                    "/aAlumno/El documento " + datosAlu[4] + " ya fue registrado al alumno " + aluExt[0] + " " + aluExt[1]
                     + " del instructor " + aluExt[2] + " " + aluExt[3] + " y gimnasio " + aluExt[4]
                 )
-        instru = request.form.get("Instructor").split(",")
-        idGim = request.form.get("Gimnasio")
-        nomGim = conectarOne("select g.nombre from gimnasio g where g.id=" + idGim)[0]
+        aluExt = conectarOne(
+                "select a.apellido, a.nombre from alumno a where a.documento='" + datosAlu[4] + "' and a.tdoc=" + tdoc
+            )
+        if aluExt:
+            return redirect(
+                    "/aAlumno/El documento " + datosAlu[4] + " ya fue registrado al alumno " + aluExt[0] + " " + aluExt[1]
+                    + " y se encuentra deshabilitado."
+                )
+        instru = datosAlu[0].split(",")
+        nomGim = conectarOne("select g.nombre from gimnasio g where g.id=" + datosAlu[1])[0]
         nomUsu = conectarOne(
             "select u.apellido, u.nombre from usuario u "
             "where u.tdoc=" + instru[0] + " and u.documento=" + instru[1]
@@ -461,6 +503,8 @@ def aAlumno(msj):
             nombre = photos.save(
                 request.files["Foto"], f'{nomGim.replace(" ","")}/{nomUsu[0]}{nomUsu[1]}'
             )
+        datosAlu[2] = datosAlu[2].replace(",","").capitalize()
+        datosAlu[3] = datosAlu[3].replace(",","").capitalize()
         msj = "Se registro al alumno: Nombre: "+ request.form.get("Nombre").capitalize()
         msj += ". Apellido: "+ request.form.get("Apellido").capitalize()
         msj += ". Instructor: " + nomUsu[0]
@@ -470,19 +514,19 @@ def aAlumno(msj):
             "alumno", "nombre,apellido,tdoc,documento,categoria,nacionalidad,"
             + "finscripcion,observaciones,email,localidad,fnac,libreta,foto,"
             + "tdocinstru,docinstru,idgim",
-            "'" + request.form.get("Nombre").capitalize() + "','" +
-            request.form.get("Apellido").capitalize() + "'," + tdoc
-            + ",'" + doc + "'," + request.form.get("Categoria") +
+            "'" + datosAlu[2] + "','" +
+            datosAlu[3] + "'," + tdoc
+            + ",'" + datosAlu[4] + "'," + request.form.get("Categoria") +
             ",'" + request.form.get("Nacionalidad").capitalize() + "','"
-            + request.form.get("fInscripcion") + "','" +
+            + datosAlu[6] + "','" +
             request.form.get("Observaciones") + "','"
             + request.form.get("Mail") + "','"
             + request.form.get("Localidad").capitalize() + "','"
-            + request.form.get("fNacimiento") + "'," +
+            + datosAlu[5] + "'," +
             request.form.get("Libreta") + ",'Imagenes"
             + url_for('obtener_nombre',
                 filename=nombre)[8:] + "'," + instru[0] + ",'" + instru[1]
-            + "'," + idGim
+            + "'," + datosAlu[1]
         )
         contacto = request.form.getlist("Contacto")
         telefono = request.form.getlist("Telefono")
@@ -490,8 +534,9 @@ def aAlumno(msj):
             if con and tel:
                 insTabla(
                     "telefono", "telefono,contacto,tdoc,documento",
-                    "'" + tel + "','" + con + "'," + tdoc + ",'" + doc + "'"
+                    "'" + tel + "','" + con + "'," + tdoc + ",'" + datosAlu[4] + "'"
                 )
+        # Notificacion de nuevo alumno
         if request.form.get("Libreta") == "0":
             i = 1
             while conectarOne("select 1 from notificacion n where n.id=" + str(i)):
@@ -500,25 +545,20 @@ def aAlumno(msj):
                 "notificacion", "id,texto",
                 str(i) + ",'Se ha registrado al alumno " + request.form.get("Apellido").capitalize()
                 + " " + request.form.get("Nombre").capitalize() + " (Sin libreta)'"
-                )
-            for tdoc, doc in conectarAll("select u.tdoc, u.documento from usuario u where u.cargo=1"):
-                insTabla(
-                    "notifica", "tdoc,documento,idnoti",
-                    str(tdoc) + ",'" + doc + "'," + str(i)
-                    )
+            )
+        for tdoc, doc in conectarAll("select u.tdoc, u.documento from usuario u where u.cargo=1"):
+            insTabla(
+                "notifica", "tdoc,documento,idnoti",
+                str(tdoc) + ",'" + doc + "'," + str(i)
+            )
         return redirect('/aAlumno/' + msj)
-        # return render_template("/Agregar/AgregarAlumno.html",
-        #     categoria=categoria,tdoc=tDoc,
-        #     usuario=usuario, msj="Se registro al alumno:\nNombre: "
-        #     + request.form.get("Nombre").capitalize() + "\nApellido: " + request.form.get("Apellido").capitalize()
-        #     + "\nInstructor: " + nomUsu[0] + " " + nomUsu[1] + "\nGimnasio: " + nomGim
-        # )
     return render_template("/Agregar/AgregarAlumno.html", categoria=categoria,tdoc=tDoc, usuario=usuario, msj=' ' if msj=='-' else msj)
 
 
 @app.route("/aNotificacion", methods={'GET', 'POST'})
 def aNotificacion():
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     usuario = list(conectarAll(
         "select u.tdoc, u.documento, u.apellido, u.nombre, c.tipo, 0 "
         "from usuario u, categoria c "
@@ -549,7 +589,8 @@ def aNotificacion():
 
 @app.route("/aImagen", methods={'GET', 'POST'})
 def aImagen():
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     fEvento = conectarAll(
         "select max(e.fecha), e.tipo from evento e "
         "group by e.tipo"
@@ -594,13 +635,13 @@ def aImagen():
 
 @app.route("/vUsuario")
 def vUsuario():
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     return render_template("/Ver/VerUsuario.html")
 
 
 @app.route("/verUsuario/<int:tUsuario>")
 def verUsuario(tUsuario):
-    # tiempoSesion()
     usuario = conectarAll(
         "select u.nombre, u.apellido, c.tipo, u.tdoc, u.documento "
         "from usuario u, categoria c "
@@ -616,7 +657,6 @@ def verUsuario(tUsuario):
 
 @app.route("/verInstructores")
 def verInstructores():
-    # tiempoSesion()
     usuario = conectarAll(
         "select u.nombre, u.apellido, c.tipo, u.tdoc, u.documento "
         "from usuario u, categoria c, enseñaen ee "
@@ -633,7 +673,6 @@ def verInstructores():
 
 @app.route("/verTodoUsuario")
 def verTodoUsuario():
-    # tiempoSesion()
     usuario = conectarAll(
         "select u.nombre, u.apellido, c.tipo, u.tdoc, u.documento "
         "from usuario u, categoria c "
@@ -659,7 +698,8 @@ def llenarDiccionarioUsuario(recorrer, dicUsu):
 
 @app.route("/vGimnasio")
 def vGimnasio():
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     condiEx = "(select ee.doc, ee.tdoc from enseñaen ee group by ee.doc, ee.tdoc) uee"
     if session['cargo'] == 2:
         condiEx = "(select ee.tdoc, ee.doc from enseñaen ee, cabeza c, usuario u where c.tdoccabeza="
@@ -684,7 +724,6 @@ def vGimnasio():
 
 @app.route("/verGimnasio/<int:tdoc>/<string:doc>")
 def verGimnasio(tdoc, doc):
-    # tiempoSesion()
     gimnasio = conectarAll(
         "select g.id, g.nombre, g.direccion "
         "from gimnasio g, enseñaen ee "
@@ -702,7 +741,6 @@ def verGimnasio(tdoc, doc):
 
 @app.route("/verTodoGimnasio")
 def verTodoGimnasio():
-    # tiempoSesion()
     query = "(select ee.idgim from enseñaen ee group by ee.idgim) as tee"
     if session['cargo'] == 2:
         query = "(select ee.idgim from enseñaen ee, cabeza c, usuario u where c.tdoccabeza="
@@ -732,12 +770,12 @@ def verTodoGimnasio():
 
 @app.route("/direcGimnasio/<int:idGim>")
 def direcGimnasio(idGim):
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     return render_template("Detalles/DetalleGimnasio.html", idGim=idGim)
 
 @app.route("/dGimnasio/<int:idGim>")
 def dGimnasio(idGim):
-    # tiempoSesion()
     gim = conectarOne(
         "select * from gimnasio g "
         "where g.id=" + str(idGim)
@@ -749,7 +787,6 @@ def dGimnasio(idGim):
 
 @app.route("/verDesaHabi/<int:valor>")
 def verDesaHabi(valor):
-    # tiempoSesion()
     gimnasio = []
     dicGim = {
         'id': [], 'nom': [], 'direc': [], 'lim': 0,
@@ -791,7 +828,8 @@ def llenarDiccionarioGimnasio(recorrer, dicGim):
 
 @app.route("/vEvento")
 def vEvento():
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     tEvento = list(conectarAll(
         "select te.id, te.tipo "
         "from tipoevento te"
@@ -802,7 +840,6 @@ def vEvento():
 
 @app.route("/verEvento/<int:tipo>/<string:fDesde>/<string:fHasta>")
 def verEvento(tipo, fDesde, fHasta):
-    # tiempoSesion()
     query = "select e.id, e.fecha, te.tipo from evento e, tipoevento te where e.tipo=te.id "
     if tipo != 0:
         query += "and e.tipo=" + str(tipo) + " "
@@ -824,32 +861,17 @@ def llenarDiccionarioEvento(recorrer, dicEven):
         dicEven['tipo'].append(tipo)
         dicEven['lim'] += 1
 
-
 @app.route("/vAlumno")
 def vAlumno():
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     categoria = list(conectarAll("select c.id, c.tipo from categoria c where c.id < 14"))
     categoria.insert(0, ("-", ""))
-    exaCap = conectarOne(
-        "select min(e.fecha) from evento e where e.tipo=1 and e.fecha >='" + str(datetime.now()) + "'"
-    )[0]
-    if exaCap:
-        exaCap = f'{exaCap.day}/{exaCap.month}/{exaCap.year}'
-    exaProv = conectarOne(
-        "select min(e.fecha) from evento e where e.tipo=4 and e.fecha >='" + str(datetime.now()) + "'"
-    )[0]
-    if exaProv:
-        exaProv = f'{exaProv.day}/{exaProv.month}/{exaProv.year}'
-    tor = conectarOne(
-        "select min(e.fecha) from evento e where e.tipo=2 and e.fecha >='" + str(datetime.now()) + "'"
-    )[0]
-    if tor:
-        tor = f'{tor.day}/{tor.month}/{tor.year}'
-    otro = conectarOne(
-        "select min(e.fecha) from evento e where e.tipo=3 and e.fecha >='" + str(datetime.now()) + "'"
-    )[0]
-    if otro:
-        otro = f'{otro.day}/{otro.month}/{otro.year}'
+    exaCap = eventoProximo(1)
+    exaProv = eventoProximo(4)
+    tor = eventoProximo(2)
+    otro = eventoProximo(3)
+    dan = eventoProximo(5)
     condiGim = ""
     condiEx = ""
     if session['cargo'] == 2:
@@ -890,29 +912,33 @@ def vAlumno():
     gimnasio.insert(0, ("", ""))
     return render_template(
         "/Ver/VerAlumno.html", categoria=categoria,
-        exaCap=exaCap, exaProv=exaProv, tor=tor, otro=otro, usuario=usuario,
-        gimnasio=gimnasio, cargo=True if session['cargo'] == 1 else False
+        exaCap=exaCap, exaProv=exaProv, tor=tor, otro=otro, dan=dan, usuario=usuario,
+        gimnasio=gimnasio, cargo= True if session['cargo'] == 1 else False
     )
 
+def eventoProximo(tipo):
+    evento = conectarAll(
+        "select date_format(min(e.fecha),'%d/%m/%Y'), e.id from evento e where e.tipo=" + str(tipo) + " and e.fecha >= '"
+        + str(datetime.now().date()) + "'"
+    )[0]
+    return evento
 
 @app.route(
     "/filtroAlumno/<string:nom>/<string:ape>/<string:cate>"
-    "/<string:fdExamen>/<string:fhExamen>/<string:fdAATEE>"
-    "/<string:fhAATEE>/<string:fdEnat>/<string:fhEnat>"
-    "/<string:tdocUsu>/<string:docUsu>/<string:idGim>"
+    "/<string:fdExamen>/<string:fhExamen>"
+    "/<string:tdocUsu>/<string:docUsu>/<string:idGim>/<string:orden>"
 )
 def filtroAlumno(
     nom, ape, cate, fdExamen, fhExamen,
-    fdAATEE, fhAATEE, fdEnat, fhEnat,
-    tdocUsu, docUsu, idGim
+    tdocUsu, docUsu, idGim, orden
 ):
-    # tiempoSesion()
+    fechaActual = datetime.now()
     query = "SELECT alucate.tdoc, alucate.documento, alucate.nombre, alucate.apellido, alucate.edad, alucate.libreta,"
     query += " alucate.tipo, alucate.insNombre, alucate.insApellido, alucate.gimNombre,"
-    query += " pEvento.fecha as fEvento, aatee.fecha as fAATEE, enat.fecha as fEnat "
+    query += " if(isnull(pEvento.fecha), alucate.finscripcion, pEvento.fecha), enat.fecha as fEnat, aatee.fecha as fAATEE "
     query += "from (SELECT a.tdoc, a.documento, a.nombre, a.apellido, c.tipo,"
     query += " a.fnac as edad, a.libreta, "
-    query += " u.nombre as insNombre, u.apellido as insApellido, g.nombre as gimNombre"
+    query += " u.nombre as insNombre, u.apellido as insApellido, g.nombre as gimNombre, a.finscripcion"
     query += " FROM alumno a, categoria c, usuario u, gimnasio g, enseñaen ee where "
     if nom != "-":
         query += "a.nombre like'%" + nom + "%' and "
@@ -942,7 +968,7 @@ def filtroAlumno(
     query += "u.tdoc=ee.tdoc and u.documento=ee.doc and ee.idgim=g.id and a.tdocinstru=u.tdoc and a.docinstru=u.documento and a.idgim = g.id and a.categoria=c.id and "
     query += "not exists (select 1 from aludesa ad where ad.tdocalu=a.tdoc and ad.docalu=a.documento)) as alucate "
     if fdExamen != "-" or fhExamen != "-":
-        query += "JOIN (select max(e.fecha) as fecha, p.tdoc, p.doc from evento e, participa p WHERE (e.tipo=1 or e.tipo=4) "
+        query += "JOIN (select max(e.fecha) as fecha, p.tdoc, p.doc from evento e, participa p WHERE p.idEvento = e.id and (e.tipo=1 or e.tipo=4 or e.tipo=5) "
         if fdExamen != "-" and fhExamen != "-":
             query += "and e.fecha between '" + fdExamen + "' and '" + fhExamen + "' "
         elif fdExamen != "-":
@@ -950,70 +976,49 @@ def filtroAlumno(
         else:
             query += "and e.fecha <= '" + fhExamen + "' "
     else:
-        query += "LEFT JOIN (select max(e.fecha) as fecha, p.tdoc, p.doc from evento e, participa p WHERE (e.tipo=1 or e.tipo=4) "
+        query += "LEFT JOIN (select max(e.fecha) as fecha, p.tdoc, p.doc from evento e, participa p WHERE (e.tipo=1 or e.tipo=4 or tipo=5) "
     query += "and e.id=p.idevento group by p.tdoc, p.doc) as pEvento on pEvento.tdoc=alucate.tdoc AND pEvento.doc=alucate.documento "
-    if fdAATEE != "-" or fhAATEE != "-":
-        query += "JOIN (select m.tdoc, m.doc, max(m.fecha) as fecha from matricula m, tipomatri tm WHERE tm.id=1 "
-        if fdAATEE != "-" and fhAATEE != "-":
-            query += "and m.fecha between '" + fdAATEE + "' and '" + fhAATEE + "' "
-        elif fdAATEE != "-":
-            query += "and m.fecha >= '" + fdAATEE + "' "
-        else:
-            query += "and m.fecha <= '" + fhAATEE + "' "
+    query += "left join (select m.tdoc, m.doc, m.fecha from matricula m where m.tipo=2 and year(m.fecha) = " + str(fechaActual.year)
+    query += ") as aatee on aatee.tdoc=alucate.tdoc and aatee.doc=alucate.documento "
+    query += "left join (select m.tdoc, m.doc, m.fecha from matricula m where m.tipo=1 and year(m.fecha) = " + str(fechaActual.year)
+    query += ") as enat on enat.tdoc=alucate.tdoc and enat.doc=alucate.documento "
+    if orden == "apeynom":
+        query += "order by if(isnull(pEvento.fecha), alucate.finscripcion, pEvento.fecha), alucate.apellido, alucate.nombre"
     else:
-        query += "LEFT JOIN (select m.tdoc, m.doc, max(m.fecha) as fecha from matricula m, tipomatri tm WHERE tm.id=1 "
-    query += "and m.tipo=tm.id group by m.tdoc, m.doc) AS aatee on aatee.tdoc=alucate.tdoc AND aatee.doc=alucate.documento "
-    if fdEnat != "-" or fhEnat != "-":
-        query += "JOIN (select m.tdoc, m.doc, max(m.fecha) as fecha from matricula m, tipomatri tm WHERE tm.id=2 "
-        if fdEnat != "-" and fhEnat != "-":
-            query += "and m.fecha between '" + fdEnat + "' and '" + fhEnat + "' "
-        elif fdEnat != "-":
-            query += "and m.fecha >= '" + fdEnat + "' "
-        else:
-            query += "and m.fecha <= '" + fhEnat + "' "
-    else:
-        query += "LEFT JOIN (select m.tdoc, m.doc, max(m.fecha) as fecha from matricula m, tipomatri tm WHERE tm.id=2 "
-    query += "and m.tipo=tm.id group by m.tdoc, m.doc) AS enat on enat.tdoc=alucate.tdoc AND enat.doc=alucate.documento "
-    query += "order by alucate.apellido, alucate.nombre"
+        query += "order by alucate.apellido, alucate.nombre"
     alumno = conectarAll(query)
     dicAlu = {
         'tdoc': [], 'doc': [], 'nom': [], 'ape': [], 'cate': [], 'fecha': [],
         'fAATEE': [], 'fEnat': [], 'lim': 0, 'insNom': [],
-        'insApe': [], 'gimNom': [], 'edad': [], 'libreta': []
+        'insApe': [], 'gimNom': [], 'edad': [], 'libreta': [], 'admin': True if session['cargo'] == 1 else False
     }
-    hoy = datetime.now()
+    hoy = int(datetime.now().date().__str__().replace("-",""))
     for tDocAlu, docAlu, nomAlu, apeAlu, fnac, libreta , cateAlu, insNom, insApe, gimNom, feAlu, faAlu, fEnatAlu in alumno:
         dicAlu["tdoc"].append(tDocAlu)
         dicAlu["doc"].append(docAlu)
         dicAlu["nom"].append(nomAlu)
         dicAlu["ape"].append(apeAlu)
         dicAlu["cate"].append(cateAlu)
-        if feAlu:
-            dicAlu["fecha"].append(f'{feAlu.day}/{feAlu.month}/{feAlu.year}')
-        else:
-            dicAlu["fecha"].append("---")
+        dicAlu["fecha"].append(f'{(12 * (fechaActual.year - feAlu.year)) + fechaActual.month - feAlu.month} meses')
         if faAlu:
-            dicAlu["fAATEE"].append(f'{faAlu.day}/{faAlu.month}/{faAlu.year}')
+            dicAlu["fAATEE"].append(True)
         else:
-                dicAlu["fAATEE"].append("---")
+                dicAlu["fAATEE"].append(False)
         if fEnatAlu:
-            dicAlu["fEnat"].append(f'{fEnatAlu.day}/{fEnatAlu.month}/{fEnatAlu.year}')
+            dicAlu["fEnat"].append(True)
         else:
-            dicAlu["fEnat"].append("---")
+            dicAlu["fEnat"].append(False)
         dicAlu["insNom"].append(insNom)
         dicAlu["insApe"].append(insApe)
         dicAlu["gimNom"].append(gimNom)
         dicAlu["libreta"].append(libreta)
-        edad = hoy.year - fnac.year
-        edad += 1 if (fnac.month < hoy.month) or (fnac.month == hoy.month and fnac.day >= hoy.day) else 0
-        dicAlu['edad'].append(edad)
+        dicAlu['edad'].append(int((hoy - int(fnac.__str__().replace("-",""))) / 10000))
         dicAlu['lim'] += 1
     return jsonify(dicAlu)
 
 
 @app.route("/vDesaAlu")
 def vDesaAlu():
-    # tiempoSesion()
     alumno = conectarAll(
         "select a.tdoc, a.documento, a.apellido, a.nombre, c.tipo, d.fecha, "
         " a.fnac "
@@ -1024,7 +1029,7 @@ def vDesaAlu():
     dicAlu = {
         'tdoc': [], 'doc': [], 'ape': [], 'nom': [], 'cate': [], 'fecha': [], 'lim': 0, 'edad': []
     }
-    hoy = datetime.now()
+    hoy = int(datetime.now().date().__str__().replace("-",""))
     for tdoc, doc, ape, nom, cate, fecha, fnac in alumno:
         dicAlu['tdoc'].append(tdoc)
         dicAlu['doc'].append(doc)
@@ -1035,16 +1040,13 @@ def vDesaAlu():
             dicAlu['fecha'].append(f'{fecha.day}/{fecha.month}/{fecha.year}')
         else:
             dicAlu['fecha'].append("---")
-        edad = hoy.year - fnac.year
-        edad += 1 if (fnac.month < hoy.month) or (fnac.month == hoy.month and fnac.day >= hoy.day) else 0
-        dicAlu['edad'].append(edad)
+        dicAlu['edad'].append(int((hoy - int(fnac.__str__().replace("-",""))) / 10000))
         dicAlu['lim'] += 1
     return jsonify(dicAlu)
 
 
 @app.route("/filtroDesaAlu/<string:nom>/<string:ape>/<string:cate>")
 def filtroDesaAlu(nom, ape, cate):
-    # tiempoSesion()
     query = "select a.tdoc, a.documento, a.apellido, a.nombre, c.tipo, d.fecha, a.fnac "
     query += "from alumno a, categoria c, aludesa d where "
     if nom != "-":
@@ -1059,7 +1061,7 @@ def filtroDesaAlu(nom, ape, cate):
         'tdoc': [], 'doc': [], 'ape': [], 'nom': [],
         'cate': [], 'fecha': [], 'lim': 0, 'edad': []
     }
-    hoy = datetime.now()
+    hoy = int(datetime.now().date().__str__().replace("-",""))
     for tdoc, doc, apealu, nomAlu, cate, fecha, fnac in alumno:
         dicAlu['tdoc'].append(tdoc)
         dicAlu['doc'].append(doc)
@@ -1067,22 +1069,20 @@ def filtroDesaAlu(nom, ape, cate):
         dicAlu['nom'].append(nomAlu)
         dicAlu['cate'].append(cate)
         dicAlu['fecha'].append(fecha)
-        edad = hoy.year - fnac.year
-        edad -= 1 if fnac.month <= hoy.month and fnac.day <= hoy.day else 0
-        dicAlu['edad'].append(edad)
+        dicAlu['edad'].append(int((hoy - int(fnac.__str__().replace("-",""))) / 10000))
         dicAlu['lim'] += 1
     return jsonify(dicAlu)
 
 
 @app.route("/vImagen")
 def vImagen():
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     return render_template("/Ver/VerImagen.html")
 
 
 @app.route("/filtrarImagen/<int:tipo>")
 def filtrarImagen(tipo):
-    # tiempoSesion()
     dicEven = {'id': [], 'direc': [], 'lim': 0, 'tipo': ""}
     llenarDicImagen(dicEven, 'lim', tipo)
     dicEven['tipo'] = conectarOne(
@@ -1093,12 +1093,12 @@ def filtrarImagen(tipo):
 
 @app.route("/vTodoImagen")
 def vTodoImagen():
-    # tiempoSesion()
     dicEven = {'id': [], 'direc': [], 'limExaCap': 0, 'limTor': 0, 'limVar': 0, 'limExaProb': 0}
     llenarDicImagen(dicEven, 'limExaCap', 1)
     llenarDicImagen(dicEven, 'limTor', 2)
     llenarDicImagen(dicEven, 'limVar', 3)
     llenarDicImagen(dicEven, 'limExaProb', 4)
+    app.logger.debug(dicEven)
     return jsonify(dicEven)
 
 
@@ -1117,13 +1117,15 @@ def llenarDicImagen(dicEven, lim, tipo):
 
 @app.route("/detalleUsuario/<int:tdoc>/<string:doc>")
 def detalleUsuario(tdoc, doc):
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     return render_template("/Detalles/DetalleUsuario.html", tdoc=tdoc, doc=doc)
 
 
 @app.route("/dUsuario/<int:tdoc>/<string:doc>")
 def dUsuario(tdoc, doc):
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     usuario = conectarOne(
         "select usu.nombre, usu.apellido, usu.categoria, usu.cargo, usu.email, td.tipo, usu.documento, "
         "cabe.apellido, cabe.nombre, instru.apellido, instru.nombre "
@@ -1160,7 +1162,6 @@ def dUsuario(tdoc, doc):
 
 @app.route("/gUsuario/<int:tdoc>/<string:doc>")
 def gUsuario(tdoc, doc):
-    # tiempoSesion()
     gimnasio = conectarAll(
         "select g.nombre, g.direccion from gimnasio g, enseñaen ee "
         "where ee.tdoc=" + str(tdoc) + " and ee.doc=" +
@@ -1176,7 +1177,6 @@ def gUsuario(tdoc, doc):
 
 @app.route("/verContra/<int:tdoc>/<string:doc>")
 def verContra(tdoc, doc):
-    # tiempoSesion()
     usuario = conectarOne(
         "select u.contraseña from usuario u "
         "where u.tdoc=" + str(tdoc) + " and u.documento=" + doc
@@ -1185,7 +1185,6 @@ def verContra(tdoc, doc):
 
 @app.route("/detalleGimnasio/<int:idGim>")
 def detalleGimnasio(idGim):
-    # tiempoSesion()
     gimnasio = conectarOne(
         "select g.id, g.nombre, g.direccion, g.logo"
         " from gimnasio g where g.id=" + str(idGim)
@@ -1198,7 +1197,6 @@ def detalleGimnasio(idGim):
 
 @app.route("/vAluGimnasio/<int:idGim>")
 def vAluGimnasio(idGim):
-    # tiempoSesion()
     query = ""
     if session['cargo'] == 2:
         query = " and exists(select 1 from cabeza c, usuario u where c.tdoccabeza="
@@ -1228,7 +1226,8 @@ def vAluGimnasio(idGim):
 
 @app.route("/detalleEvento/<int:idEve>")
 def detalleEvento(idEve):
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     evento = conectarOne(
         "select e.id, 1 from evento e "
         "where e.id=" + str(idEve)
@@ -1239,7 +1238,6 @@ def detalleEvento(idEve):
 
 @app.route("/dEvento/<int:idEve>")
 def dEvento(idEve):
-    # tiempoSesion()
     evento = conectarOne(
         "select e.id, e.fecha, e.descripcion, te.tipo "
         "from evento e, tipoevento te "
@@ -1254,39 +1252,37 @@ def dEvento(idEve):
 
 @app.route("/vAluEvento/<int:idEve>")
 def vAluEvento(idEve):
-    # tiempoSesion()
     condiEx = ""
-    if session['cargo'] == 2:
-        condiEx = " and exists (select 1 from cabeza c, usuario u where c.tdoccabeza="
-        condiEx += str(session['tdoc']) + " and c.doccabeza='"
-        condiEx += session['doc']
-        condiEx += "' and c.tdoc=u.tdoc and c.documento=u.documento"
-        condiEx += " and a.tdocinstru=u.tdoc and a.docinstru=u.documento)"
-    elif session['cargo'] == 3:
+    if session['cargo'] == 3:
         condiEx = " and exists (select 1 from instructor i, usuario u where i.tdocinstru="
         condiEx += str(session['tdoc']) + " and i.docinstru='"
         condiEx += session['doc']
         condiEx += "' and i.tdoc=u.tdoc and i.documento=u.documento"
         condiEx += " and a.tdocinstru=u.tdoc and a.docinstru=u.documento)"
     evento = conectarAll(
-        "select a.nombre, a.apellido, c.tipo"
+        "select a.nombre, a.apellido, c.tipo, a.fnac"
         " from alumno a, participa p, evento e, categoria c"
         + " where e.id=" + str(idEve) +
         " and e.id=p.idevento and p.tdoc=a.tdoc and p.doc=a.documento and p.categoria=c.id"
-        + condiEx + " order by a.apellido, a.nombre"
+        + condiEx + " order by a.fnac asc, a.apellido, a.nombre"
     )
-    dicAluEve = {'nom': [], 'ape': [], 'cate': [], 'lim': 0, 'idEve': idEve}
-    for nom, ape, cate in evento:
+    dicAluEve = {'nom': [], 'ape': [], 'cate': [], 'lim': 0, 'idEve': idEve, 'edad': []}
+    hoy = datetime.now()
+    for nom, ape, cate, fnac in evento:
         dicAluEve['nom'].append(nom)
         dicAluEve['ape'].append(ape)
         dicAluEve['cate'].append(cate)
+        edad = hoy.year - fnac.year
+        edad += 1 if (fnac.month < hoy.month) or (fnac.month == hoy.month and fnac.day >= hoy.day) else 0
+        dicAluEve['edad'].append(edad)
         dicAluEve['lim'] += 1
     return jsonify(dicAluEve)
 
 
 @app.route("/detalleAlumno/<int:tdoc>/<string:doc>")
 def detalleAlumno(tdoc, doc):
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     alumno = conectarOne(
         "select a.tdoc, a.documento from alumno a "
         "where a.tdoc=" + str(tdoc) + " and a.documento='" + doc + "'"
@@ -1295,7 +1291,6 @@ def detalleAlumno(tdoc, doc):
 
 @app.route("/dAlumno/<int:tdoc>/<string:doc>")
 def dAlumno(tdoc, doc):
-    # tiempoSesion()
     alumno = conectarOne(
         "select a.nombre, a.apellido, c.tipo, a.nacionalidad, a.fnac, "
         "a.finscripcion, a.observaciones, a.email, a.localidad, a.foto, "
@@ -1317,7 +1312,6 @@ def dAlumno(tdoc, doc):
 
 @app.route("/vEveAlumno/<int:tdoc>/<string:doc>")
 def vEveAlumno(tdoc, doc):
-    # tiempoSesion()
     evento = conectarAll(
         "select e.fecha, te.tipo, c.tipo "
         "from evento e, participa p, tipoevento te, categoria c "
@@ -1327,7 +1321,7 @@ def vEveAlumno(tdoc, doc):
     )
     dicEven = {'fecha': [], 'tipo': [], 'cate': [], 'lim': 0}
     for fecha, tipo, cate in evento:
-        dicEven['fecha'].append(f'{fecha.day}/{fecha.month}/{fecha.day}')
+        dicEven['fecha'].append(f'{fecha.day}/{fecha.month}/{fecha.year}')
         dicEven['tipo'].append(tipo)
         dicEven['cate'].append(cate)
         dicEven['lim'] += 1
@@ -1336,7 +1330,6 @@ def vEveAlumno(tdoc, doc):
 
 @app.route("/vMatriAlu/<int:tdoc>/<string:doc>")
 def vMatriAlu(tdoc, doc):
-    # tiempoSesion()
     matricula = conectarAll(
         "select m.fecha, tm.tipo "
         "from alumno a, matricula m, tipomatri tm "
@@ -1355,7 +1348,8 @@ def vMatriAlu(tdoc, doc):
 
 @app.route("/eUsuario/<int:tdoc>/<string:doc>/<string:retorno>", methods={'GET', 'POST'})
 def eUsuario(tdoc, doc, retorno):
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     cargo = conectarAll('select * from cargo')
     categoria = conectarAll("select * from categoria c where c.id > 10")
     tDoc = conectarAll("select * from tipodocumento")
@@ -1518,7 +1512,6 @@ def upInstruCabe(valN1, condi1, valN2, condi2, valN3, condi3, valN4, condi4):
 
 @app.route("/cargarUsuario/<int:tdoc>/<string:doc>")
 def cargarUsuario(tdoc, doc):
-    # tiempoSesion()
     usuario = conectarOne(
         "select usu.nombre, usu.apellido, usu.categoria, usu.cargo, usu.email, usu.tdoc, usu.documento, "
         "cabe.tdoccabeza, cabe.doccabeza, instru.tdocinstru, instru.docinstru "
@@ -1548,7 +1541,8 @@ def cargarUsuario(tdoc, doc):
 
 @app.route("/eGimnasio/<int:idGim>", methods={'GET', 'POST'})
 def eGimnasio(idGim):
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     if request.method == 'POST':
         query = ""
         gim = conectarOne(
@@ -1633,7 +1627,6 @@ def eGimnasio(idGim):
 
 @app.route("/cargarGimnasio/<int:idGim>")
 def cargarGimnasio(idGim):
-    # tiempoSesion()
     usuario = conectarAll(
         "select u.tdoc, u.documento "
         "from usuario u, enseñaen en, categoria c "
@@ -1701,7 +1694,6 @@ def cargarGimnasio(idGim):
 
 @app.route("/aHoraGim/<int:idGim>")
 def aHoraGim(idGim):
-    # tiempoSesion()
     aGimUsuHora = conectarAll(
         "select u.tdoc, u.documento, u.apellido, u.nombre, c.tipo "
         "from usuario u, enseñaen ee, categoria c "
@@ -1718,7 +1710,8 @@ def aHoraGim(idGim):
 
 @app.route("/eEvento/<int:idEve>", methods={'GET', 'POST'})
 def eEvento(idEve):
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     tipo = conectarAll('select * from tipoevento')
     if request.method == 'POST':
         evento = conectarOne(
@@ -1741,7 +1734,6 @@ def eEvento(idEve):
 
 @app.route("/cargarEvento/<int:idEve>")
 def cargarEvento(idEve):
-    # tiempoSesion()
     evento = conectarOne(
         "select e.fecha, e.tipo, e.descripcion "
         "from evento e "
@@ -1754,7 +1746,8 @@ def cargarEvento(idEve):
 
 @app.route("/eAlumno/<int:tdoc>/<string:doc>", methods={'GET', 'POST'})
 def eAlumno(tdoc, doc):
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     categoria = conectarAll("select * from categoria")
     tDoc = conectarAll("select * from tipodocumento")
     condiEx = ""
@@ -1890,7 +1883,6 @@ def eAlumno(tdoc, doc):
 
 @app.route("/cargarAlumno/<int:tdoc>/<string:doc>")
 def cargarAlumno(tdoc, doc):
-    # tiempoSesion()
     alumno = conectarOne(
         "select a.nombre, a.apellido, a.tdoc, a.documento, a.categoria, a.nacionalidad"
         ", a.finscripcion, a.observaciones, a.email, a.localidad"
@@ -1922,7 +1914,8 @@ def cargarAlumno(tdoc, doc):
 
 @app.route("/elimUsuario/<int:tdoc>/<string:doc>")
 def elimUsuario(tdoc, doc):
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     delTabla("cabeza", "tdoc=" + str(tdoc) + " and documento='" + doc + "'")
     delTabla("instructor", "tdoc=" + str(tdoc) +
              " and documento='" + doc + "'")
@@ -1946,7 +1939,8 @@ def elimUsuario(tdoc, doc):
 
 @app.route("/desaGim/<int:idGim>")
 def desaGim(idGim):
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     alu = []
     if session['cargo'] != 3:
         delTabla("enseñaen", "idgim=" + str(idGim))
@@ -2001,7 +1995,8 @@ def desaGim(idGim):
 
 @app.route("/elimGimnasio/<int:idGim>")
 def elimGimnasio(idGim):
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     logo = conectarOne(
         "select g.logo from gimnasio g where g.id=" + str(idGim)
     )[0]
@@ -2010,19 +2005,12 @@ def elimGimnasio(idGim):
     return redirect("/vGimnasio")
 
 
-@app.route("/aAluEven/<int:tipo>/<string:cadAlu>")
-def aAluEven(tipo, cadAlu):
-    # tiempoSesion()
+@app.route("/aAluEven/<int:idEve>/<string:cadAlu>")
+def aAluEven(idEve, cadAlu):
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     cadAlu = cadAlu.split(".")
-    idEve = conectarOne(
-        "select e.id "
-        "from evento e, ("
-        "select min(e.fecha) as minFecha "
-        "from evento e where e.tipo=" +
-        str(tipo) + " and e.fecha >= '" + str(datetime.today()) + "'"
-        ") as ef "
-        "where e.fecha = ef.minFecha and e.tipo=" + str(tipo)
-    )[0]
+    tipo = conectarOne("select tipo from evento where id=" + str(idEve))[0]
     for elem in cadAlu:
         elem = elem.split(",")
         if not conectarOne(
@@ -2034,22 +2022,28 @@ def aAluEven(tipo, cadAlu):
                 "select a.categoria from alumno a where a.tdoc="
                 + elem[0] + " and a.documento='" + elem[1] + "'"
             )[0]
-            if tipo == 1:
+            if tipo == 1 or tipo == 4 or (tipo == 5 and cate >= 10):
                 cate = cate + 1
                 upTabla(
                     "alumno", "categoria=" + str(cate),
                     "tdoc=" + elem[0] + " and documento='" + elem[1] + "'"
                 )
-            insTabla(
-                "participa", "tdoc,doc,idevento,categoria",
-                elem[0] + ",'" + elem[1] + "'," + str(idEve) + "," + str(cate)
-            )
+                insTabla(
+                    "participa", "tdoc,doc,idevento,categoria",
+                    elem[0] + ",'" + elem[1] + "'," + str(idEve) + "," + str(cate)
+                )
+            elif tipo == 2 or tipo == 3:
+                insTabla(
+                    "participa", "tdoc,doc,idevento,categoria",
+                    elem[0] + ",'" + elem[1] + "'," + str(idEve) + "," + str(cate)
+                )
     return redirect("/vAlumno")
 
 
 @app.route("/desaAlu/<string:cadAlu>")
 def desaAlu(cadAlu):
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     cadAlu = cadAlu.split(".")
     if not os.path.isdir(pathlib.Path("BaseConReact/static/Imagenes/Deshabilitados").absolute()):
         os.mkdir(pathlib.Path("BaseConReact/static/Imagenes/Deshabilitados").absolute())
@@ -2078,7 +2072,8 @@ def desaAlu(cadAlu):
 
 @app.route("/habiAlu/<string:tdocUsu>/<string:docUsu>/<string:idGim>/<string:cadAlu>")
 def habiAlu(tdocUsu, docUsu, idGim, cadAlu):
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     cadAlu = cadAlu.split(".")
     if conectarOne(
         "select 1 from enseñaen en where en.tdoc="
@@ -2122,11 +2117,14 @@ def habiAlu(tdocUsu, docUsu, idGim, cadAlu):
 
 @app.route("/aluMatri/<int:tipo>/<string:cadAlu>")
 def aluMatri(tipo, cadAlu):
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     cadAlu = cadAlu.split(".")
     tipo = str(tipo)
     for elem in cadAlu:
         elem = elem.split(",")
+        if tipo == '2':
+            upTabla("alumno","libreta = 1", "tdoc = " + elem[0] + " and documento = '" + elem[1] + "'")
         resu = conectarOne(
             "select 1 from matricula m "
             "where m.tdoc=" + elem[0] + " and m.doc='" + elem[1] + "' and "
@@ -2141,18 +2139,9 @@ def aluMatri(tipo, cadAlu):
             )
     return redirect("/vAlumno")
 
-@app.route("/aluLibre/<string:cadAlu>")
-def aluLibre(cadAlu):
-    cadAlu = cadAlu.split(".")
-    for elem in cadAlu:
-        elem = elem.split(",")
-        upTabla("alumno", "libreta=1", "tdoc=" + elem[0] + " and documento='" + elem[1] + "'")
-    return redirect("/vAlumno")
-
 
 @app.route("/vFilEveAlu/<string:tipo>/<string:tdoc>/<string:doc>")
 def vFilEveAlu(tipo, tdoc, doc):
-    # tiempoSesion()
     aluEve = conectarAll(
         "select e.fecha, te.tipo, c.tipo "
         "from evento e, participa p, categoria c, tipoevento te "
@@ -2171,7 +2160,6 @@ def vFilEveAlu(tipo, tdoc, doc):
 
 @app.route("/aPrevEve/<string:tdoc>/<string:doc>")
 def aPrevEve(tdoc, doc):
-    # tiempoSesion()
     evento = conectarAll(
         "select e.id, e.fecha, te.tipo "
         "from evento e, tipoevento te "
@@ -2191,7 +2179,8 @@ def aPrevEve(tdoc, doc):
 
 @app.route("/agregaEvento/<string:tdoc>/<string:doc>/<string:cadEve>")
 def agregaEvento(tdoc, doc, cadEve):
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     eveReg = conectarAll(
         "select e.id, e.tipo, e.fecha "
         "from evento e "
@@ -2214,7 +2203,6 @@ def agregaEvento(tdoc, doc, cadEve):
 
 @app.route("/ePrevEven/<string:tdoc>/<string:doc>")
 def ePrevEven(tdoc, doc):
-    # tiempoSesion()
     even = conectarAll(
         "select e.id, e.fecha, te.tipo "
         "from evento e, tipoevento te, participa p "
@@ -2232,7 +2220,8 @@ def ePrevEven(tdoc, doc):
 
 @app.route("/elimEvento/<string:tdoc>/<string:doc>/<string:cadEve>")
 def elimEvento(tdoc, doc, cadEve):
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     eveReg = conectarAll(
         "select e.id, e.tipo "
         "from evento e "
@@ -2244,7 +2233,7 @@ def elimEvento(tdoc, doc, cadEve):
     cate = conectarOne(
         "select a.categoria - ("
         "select count(*) from evento e "
-        "where e.id in(" + cadEve + ") and (e.tipo=1 or e.tipo=4)"
+        "where e.id in(" + cadEve + ") and (e.tipo=1 or e.tipo=4 or e.tipo=5)"
         ") "
         "from alumno a "
         "where a.tdoc=" + tdoc + " and a.documento='" + doc + "'"
@@ -2278,7 +2267,8 @@ def insparti(tdoc, doc, idEve, cate, reco):
 
 @app.route("/eImagen/<string:idImagen>/<string:direc>")
 def eImagen(idImagen, direc):
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     direc = direc.replace("ƒ", "/")
     delTabla("imagen", "idevento=" + idImagen +
              " and direccion='" + direc + "'")
@@ -2288,23 +2278,17 @@ def eImagen(idImagen, direc):
 
 @app.route("/eNotificacion/<string:idNoti>")
 def eNotificacion(idNoti):
-    # tiempoSesion()
-    delTabla(
-        "notifica", "idnoti=" + idNoti + " and tdoc="
-        + str(session['tdoc']) + " and documento='" + session['doc'] + "'"
-    )
-    resu = conectarOne(
-        "select 1 from notifica n "
-        "where n.idnoti=" + idNoti
-    )
-    if not resu:
-        delTabla("notificacion", "id=" + idNoti)
+    if not tiempoSesion():
+        return redirect(url_for("login"))
+    delTabla("notifica", "idnoti=" + idNoti)
+    delTabla("notificacion", "id=" + idNoti)
     return redirect("/MainBase")
 
 
 @app.route("/elimAlu/<string:cadAlu>")
 def elimAlu(cadAlu):
-    # tiempoSesion()
+    if not tiempoSesion():
+        return redirect(url_for("login"))
     cadAlu = cadAlu.split(".")
     for dato in cadAlu:
         dato = dato.split(",")

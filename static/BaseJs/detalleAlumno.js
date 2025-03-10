@@ -54,12 +54,12 @@ function vEveAlumno(tdoc,doc){
 function agregarEventos(tdoc,doc){
     fetch("/aPrevEve/" + tdoc + "/" + doc).then(response => {
         response.json().then(data => {
-            let text = "<div class='detalleEvento'><p></p><p>Fecha</p><p>Tipo</p></div>";
+            let text = "<table><thead><th></th><th>Fecha</th><th>Tipo</th></thead><tbody>";
             for(let i = 0; i < data['lim']; i++){
-                text += "<div class='detalleEvento'><p><input type='checkbox' name='checkAluEve' value='"
-                + data['id'][i] + "'></p><p>" + data['fecha'][i] + "</p><p>" + data['tipo'][i]+ "</p></div>"
+                text += "<tr><td><input type='checkbox' name='checkAluEve' value='"
+                + data['id'][i] + "'></td><td>" + data['fecha'][i] + "</td><td>" + data['tipo'][i] + "</td></tr>";
             }
-            cont.innerHTML = text + "<div class='dosBotones'><button class='btnRedondeado' onclick='vEveAlumno("
+            cont.innerHTML = text + "</tbody></table><div class='dosBotones'><button class='btnRedondeado' onclick='vEveAlumno("
             + tdoc + "," + doc + ")'>Regresar</button><button class='btnRedondeado' onclick='aAluEve("
             + tdoc + "," + doc + ")'>Aceptar</button></div>"
         });
@@ -79,12 +79,12 @@ function aAluEve(tdoc, doc){
 function eliminarEventos(tdoc,doc){
     fetch("/ePrevEven/" + tdoc + "/" + doc).then(response => {
         response.json().then(data => {
-            let text = "<div class='detalleEvento'><p></p><p>Fecha</p><p>Tipo</p></div>";
+            let text = "<table><thead><th></th><th>Fecha</th><th>Tipo</th></thead><tbody>";
             for(let i = 0; i < data['lim']; i++){
-                text += "<div class='detalleEvento'><p><input type='checkbox' name='checkAluEve' value='"
-                + data['id'][i] + "'></p><p>" + data['fecha'][i] + "</p><p>" + data['tipo'][i]+ "</p></div>"
+                text += "<tr><td><input type='checkbox' name='checkAluEve' value='"
+                + data['id'][i] + "'></td><td>" + data['fecha'][i] + "</td><td>" + data['tipo'][i] + "</td></tr>";
             }
-            cont.innerHTML = text + "<div class='dosBotones'><button class='btnRedondeado' onclick='vEveAlumno("
+            cont.innerHTML = text + "</tbody></table><div class='dosBotones'><button class='btnRedondeado' onclick='vEveAlumno("
             + tdoc + "," + doc + ")'>Regresar</button><button class='btnRedondeado' onclick='eAluEve("
             + tdoc + "," + doc + ")'>Aceptar</button></div>"
         });
